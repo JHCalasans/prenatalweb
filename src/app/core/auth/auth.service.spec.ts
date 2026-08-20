@@ -7,13 +7,16 @@ import { AuthService } from './auth.service';
 function clienteFalso(opcoes: {
   sessao?: unknown;
   erroLogin?: boolean;
+  erroRede?: boolean;
   perfil?: { id: string; nome: string; papel: string } | null;
 }) {
   const signOut = vi.fn().mockResolvedValue({ error: null });
   return {
     signOut,
     auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: opcoes.sessao ?? null } }),
+      getSession: opcoes.erroRede
+        ? vi.fn().mockRejectedValue(new Error('network error'))
+        : vi.fn().mockResolvedValue({ data: { session: opcoes.sessao ?? null } }),
       onAuthStateChange: vi.fn(),
       signInWithPassword: vi
         .fn()
@@ -118,5 +121,15 @@ describe('AuthService', () => {
 
     expect(auth.autenticado()).toBe(true);
     expect(auth.perfil()?.nome).toBe('Ana');
+  });
+
+  it('não trava o boot quando a sessão não pode ser restaurada por falha de rede', async () => {
+    const cliente = clienteFalso({ erroRede: true });
+    const auth = criar(cliente);
+
+    await expect(auth.inicializar()).resolves.toBeUndefined();
+
+    expect(auth.autenticado()).toBe(false);
+    expect(auth.perfil()).toBeNull();
   });
 });

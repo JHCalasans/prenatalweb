@@ -34,16 +34,23 @@ export class AuthService {
   readonly papel = computed<PapelEquipe | null>(() => this.perfilSig()?.papel ?? null);
 
   async inicializar(): Promise<void> {
-    const { data } = await this.supabase.auth.getSession();
-    if (data.session) {
-      const resultado = await this.carregarPerfil(data.session.user.id);
-      if (resultado.ok) {
-        this.sessaoSig.set(data.session);
-        this.perfilSig.set(resultado.perfil);
-      } else {
-        this.saidaIntencional = true;
-        await this.supabase.auth.signOut();
+    try {
+      const { data } = await this.supabase.auth.getSession();
+      if (data.session) {
+        const resultado = await this.carregarPerfil(data.session.user.id);
+        if (resultado.ok) {
+          this.sessaoSig.set(data.session);
+          this.perfilSig.set(resultado.perfil);
+        } else {
+          this.saidaIntencional = true;
+          await this.supabase.auth.signOut();
+        }
       }
+    } catch {
+      // Rede indisponível ou Supabase inacessível: segue deslogado em vez de
+      // travar o provideAppInitializer e deixar o app em branco.
+      this.sessaoSig.set(null);
+      this.perfilSig.set(null);
     }
 
     // Callback síncrono de propósito: chamar o supabase-js aqui trava o cliente.
