@@ -22,7 +22,12 @@
 
 ### W1 — Auth + shell
 
-- Login Supabase, sessão persistente, guard por papel, layout base (sidebar), tratamento de sessão expirada.
+- [x] Login Supabase com Reactive Forms e mensagens por motivo (credenciais, sem perfil, papel negado)
+- [x] Sessão persistente restaurada no boot (`provideAppInitializer` → `AuthService.inicializar`)
+- [x] Guards `sessaoGuard`/`deslogadoGuard` + fábrica `papelGuard(...)` (aplicada a partir da W2)
+- [x] Layout base com sidebar, cabeçalho e logout
+- [x] Sessão expirada devolve ao login com aviso e preserva a rota de retorno
+- [x] Papel `secretaria` adicionado ao enum `papel_usuario` (migration no `prenatalapp`)
 
 ### W2 — Administração da clínica (secretaria)
 

@@ -1,0 +1,28 @@
+.cartao {
+  padding: 2rem;
+  max-width: 44rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aconchego-link);
+}
+
+h1 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--aconchego-texto-primario);
+}
+
+.subtitulo,
+.aviso {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}

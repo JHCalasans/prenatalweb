@@ -37,7 +37,7 @@ Paleta do app mobile traduzida para design tokens do PrimeNG:
   utilitário `.cartao-vidro`;
 - fonte Nunito self-hosted (`@fontsource-variable/nunito`).
 
-A home é um showcase vivo do tema — confira ali ao mexer nos tokens.
+A rota `/inicio` (dentro do shell autenticado) é o ponto de conferência do tema.
 
 ## Deploy de preview (GitHub Pages)
 
@@ -59,3 +59,18 @@ gera `src/environments/environment.production.ts` a partir das variáveis:
 Sem as variáveis (build local), o script grava placeholders e o build segue. No
 workflow de deploy, defina-as como **secrets do repositório** quando o projeto
 de produção existir. O arquivo gerado está no `.gitignore`.
+
+## Acesso
+
+O web é só para a equipe: papéis `medica` e `secretaria`. Contas com papel
+`paciente` são recusadas no login e têm a sessão descartada — gestantes usam o
+app `prenatalapp`.
+
+Papel é atribuído pelo backend, nunca pelo cliente:
+
+- `select public.promover_para_medica('<uuid>', 'Nome');`
+- `select public.promover_para_secretaria('<uuid>', 'Nome');`
+
+Ambas exigem service role. Para criar uma conta de teste local, crie o usuário
+pelo Studio (`http://127.0.0.1:54323`) e rode a função correspondente no SQL
+editor.

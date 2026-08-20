@@ -1,35 +1,55 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { SUPABASE_CLIENT } from '../../core/supabase-client';
+import { AuthService } from '../../core/auth/auth.service';
+
+// Só caminho interno: `retorno` vem da URL e viraria open redirect.
+function rotaInternaSegura(valor: string | null): string | null {
+  if (!valor || !valor.startsWith('/') || valor.startsWith('//')) {
+    return null;
+  }
+  return valor;
+}
 
 @Component({
-  imports: [FormsModule, ButtonModule, InputTextModule],
+  imports: [ButtonModule, InputTextModule, ReactiveFormsModule],
   selector: 'app-login',
   styleUrl: './login.scss',
   templateUrl: './login.html',
 })
 export class Login {
-  protected email = '';
-  protected senha = '';
+  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly rota = inject(ActivatedRoute);
+
   protected readonly enviando = signal(false);
   protected readonly erro = signal<string | null>(null);
+  protected readonly expirada = signal(this.rota.snapshot.queryParamMap.get('expirada') === '1');
 
-  private readonly supabase = inject(SUPABASE_CLIENT);
+  protected readonly formulario = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    senha: ['', [Validators.required, Validators.minLength(6)]],
+  });
 
   protected async entrar(): Promise<void> {
+    if (this.formulario.invalid || this.enviando()) {
+      return;
+    }
     this.erro.set(null);
+    this.expirada.set(false);
     this.enviando.set(true);
     try {
-      const { error } = await this.supabase.auth.signInWithPassword({
-        email: this.email,
-        password: this.senha,
-      });
-      if (error) {
-        this.erro.set(error.message);
+      const { email, senha } = this.formulario.getRawValue();
+      const resultado = await this.auth.entrar(email, senha);
+      if (!resultado.ok) {
+        this.erro.set(resultado.mensagem);
+        return;
       }
-      // Redirecionamento pós-sessão chega com o shell/guard da W1.
+      const retorno = rotaInternaSegura(this.rota.snapshot.queryParamMap.get('retorno'));
+      await this.router.navigateByUrl(retorno ?? '/inicio');
     } finally {
       this.enviando.set(false);
     }

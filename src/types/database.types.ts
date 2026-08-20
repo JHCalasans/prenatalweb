@@ -7,6 +7,31 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       audit_log: {
@@ -628,6 +653,10 @@ export type Database = {
         Args: { p_nome?: string; p_user_id: string }
         Returns: undefined
       }
+      promover_para_secretaria: {
+        Args: { p_nome?: string; p_user_id: string }
+        Returns: undefined
+      }
       publicar_documento: {
         Args: { p_confirmar_comunicado?: boolean; p_documento_id: string }
         Returns: undefined
@@ -647,7 +676,7 @@ export type Database = {
         | "transferencia_cuidado"
         | "outro"
       dpp_origem: "dum" | "usg"
-      papel_usuario: "paciente" | "medica"
+      papel_usuario: "paciente" | "medica" | "secretaria"
       papel_vinculo: "obstetra" | "medicina_fetal"
       status_checklist:
         | "pendente"
@@ -788,6 +817,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       desfecho_gestacao: [
@@ -799,7 +831,7 @@ export const Constants = {
         "outro",
       ],
       dpp_origem: ["dum", "usg"],
-      papel_usuario: ["paciente", "medica"],
+      papel_usuario: ["paciente", "medica", "secretaria"],
       papel_vinculo: ["obstetra", "medicina_fetal"],
       status_checklist: [
         "pendente",

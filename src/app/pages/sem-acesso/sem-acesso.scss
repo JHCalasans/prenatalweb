@@ -1,0 +1,25 @@
+.sem-acesso {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.cartao {
+  width: min(100%, 28rem);
+  padding: 2.25rem 2rem;
+  text-align: center;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--aconchego-texto-primario);
+}
+
+p {
+  margin: 0 0 1.25rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}

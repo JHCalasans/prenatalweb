@@ -1,0 +1,25 @@
+<div class="shell">
+  <aside class="barra">
+    <p class="marca">Pré-Natal</p>
+    <nav>
+      <a routerLink="/inicio" routerLinkActive="ativo">
+        <i class="pi pi-home" aria-hidden="true"></i>
+        <span>Início</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="area">
+    <header class="topo">
+      <div class="usuario">
+        <strong>{{ perfil()?.nome }}</strong>
+        <small>{{ papelRotulo() }}</small>
+      </div>
+      <p-button label="Sair" icon="pi pi-sign-out" severity="secondary" (onClick)="sair()" />
+    </header>
+
+    <main class="conteudo">
+      <router-outlet />
+    </main>
+  </div>
+</div>

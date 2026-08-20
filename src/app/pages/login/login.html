@@ -2,34 +2,24 @@
   <section class="cartao-vidro cartao">
     <p class="eyebrow">Pré-Natal Web</p>
     <h1>Entrar</h1>
-    <p class="subtitulo">Acesso restrito à equipe (secretaria e médica).</p>
+    <p class="subtitulo">Acesso restrito à equipe.</p>
 
-    <form class="formulario" #form="ngForm" (ngSubmit)="entrar()">
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="entrar()">
       <label for="email">E-mail</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        pInputText
-        autocomplete="email"
-        [(ngModel)]="email"
-        required
-        email
-        #emailCtrl="ngModel"
-      />
+      <input id="email" type="email" pInputText autocomplete="email" formControlName="email" />
 
       <label for="senha">Senha</label>
       <input
         id="senha"
-        name="senha"
         type="password"
         pInputText
         autocomplete="current-password"
-        [(ngModel)]="senha"
-        required
-        minlength="6"
-        #senhaCtrl="ngModel"
+        formControlName="senha"
       />
+
+      @if (expirada()) {
+        <p class="aviso" role="status">Sua sessão expirou. Entre novamente.</p>
+      }
 
       @if (erro()) {
         <p class="erro" role="alert">{{ erro() }}</p>
@@ -39,7 +29,7 @@
         type="submit"
         label="Entrar"
         [loading]="enviando()"
-        [disabled]="form.invalid || enviando()"
+        [disabled]="formulario.invalid || enviando()"
       />
     </form>
   </section>

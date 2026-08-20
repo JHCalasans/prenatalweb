@@ -63,5 +63,12 @@ h1 {
   margin: 0.75rem 0 0;
   font-weight: 600;
   font-size: 0.875rem;
-  color: var(--aconchego-perigo);
+  color: var(--aconchego-erro);
+}
+
+.aviso {
+  margin: 0.75rem 0 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--aconchego-texto-secundario);
 }
