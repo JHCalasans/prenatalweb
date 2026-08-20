@@ -1,0 +1,46 @@
+<main class="login">
+  <section class="cartao-vidro cartao">
+    <p class="eyebrow">Pré-Natal Web</p>
+    <h1>Entrar</h1>
+    <p class="subtitulo">Acesso restrito à equipe (secretaria e médica).</p>
+
+    <form class="formulario" #form="ngForm" (ngSubmit)="entrar()">
+      <label for="email">E-mail</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        pInputText
+        autocomplete="email"
+        [(ngModel)]="email"
+        required
+        email
+        #emailCtrl="ngModel"
+      />
+
+      <label for="senha">Senha</label>
+      <input
+        id="senha"
+        name="senha"
+        type="password"
+        pInputText
+        autocomplete="current-password"
+        [(ngModel)]="senha"
+        required
+        minlength="6"
+        #senhaCtrl="ngModel"
+      />
+
+      @if (erro()) {
+        <p class="erro" role="alert">{{ erro() }}</p>
+      }
+
+      <p-button
+        type="submit"
+        label="Entrar"
+        [loading]="enviando()"
+        [disabled]="form.invalid || enviando()"
+      />
+    </form>
+  </section>
+</main>

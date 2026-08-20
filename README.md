@@ -1,59 +1,61 @@
 # Prenatalweb
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.5.
+Web administrativo e de equipe médica do pré-natal (a gestante usa o app
+`prenatalapp`). App autenticado e denso — tabelas, formulários, upload — sobre
+Angular standalone/signals + PrimeNG, com backend Supabase compartilhado com o
+mobile.
 
-## Development server
+- Decisões: [ADR 0001 — stack](docs/adr/0001-decisao-de-stack-web.md) ·
+  [ADR 0002 — PrimeNG 21 MIT](docs/adr/0002-licenca-primeng.md)
+- Plano: [roadmap-web](docs/roadmap-web.md)
+- Tema: [mapa Aconchego mobile → web](docs/tema-aconchego.md)
 
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Desenvolvimento
 
 ```bash
-ng generate component component-name
+npm install
+npm start          # http://localhost:4200 — usa Supabase local (Docker, 127.0.0.1:54321)
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Ambientes ficam em `src/environments/`:
 
-```bash
-ng generate --help
-```
+| Arquivo                      | Uso                                              |
+| ---------------------------- | ------------------------------------------------ |
+| `environment.development.ts` | `ng serve` — Supabase local                      |
+| `environment.ts`             | Fallback de produção (placeholders)              |
+| `environment.production.ts`  | **Gerado em build**, não versionado — ver abaixo |
 
-## Building
+Outros comandos: `npm test` (Vitest), `npm run lint`, `npm run typecheck`,
+`npm run format`, `npm run build`.
 
-To build the project run:
+## Tema Aconchego
 
-```bash
-ng build
-```
+Paleta do app mobile traduzida para design tokens do PrimeNG:
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- `src/app/core/theme/aconchego.preset.ts` — tokens (cores, raios, sombras);
+- `src/styles.scss` — fundo em gradiente, variáveis `--aconchego-*`,
+  utilitário `.cartao-vidro`;
+- fonte Nunito self-hosted (`@fontsource-variable/nunito`).
 
-## Running unit tests
+A home é um showcase vivo do tema — confira ali ao mexer nos tokens.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Deploy de preview (GitHub Pages)
 
-```bash
-ng test
-```
+Todo push em `main` publica o build estático no GitHub Pages
+(workflow [`deploy-preview.yml`](.github/workflows/deploy-preview.yml)):
+`https://jhcalasans.github.io/prenatalweb/`.
 
-## Running end-to-end tests
+Configuração única, manual: **Settings → Pages → Build and deployment →
+Source: GitHub Actions**.
 
-For end-to-end (e2e) testing, run:
+## Environment de produção
 
-```bash
-ng e2e
-```
+`npm run build` roda antes o `scripts/write-env.mjs` (hook `prebuild`), que
+gera `src/environments/environment.production.ts` a partir das variáveis:
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- `SUPABASE_URL` — URL do projeto Supabase de produção
+- `SUPABASE_ANON_KEY` — publishable/anon key (chave pública; a proteção é a RLS)
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Sem as variáveis (build local), o script grava placeholders e o build segue. No
+workflow de deploy, defina-as como **secrets do repositório** quando o projeto
+de produção existir. O arquivo gerado está no `.gitignore`.

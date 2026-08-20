@@ -5,20 +5,20 @@
 - Repo próprio (este), app autenticado denso (tabelas/formulários/upload); **SSR/SEO irrelevantes**.
 - Papéis: `secretaria` e `medica`; gestante **não** acessa o web.
 - Backend = Supabase compartilhado com o mobile (Auth, Postgres, RLS, Storage) — policies existentes já valem para o web.
-- Stack decidida: Angular + PrimeNG — ver [ADR 0001](adr/0001-decisao-de-stack-web.md).
+- Stack decidida: Angular 21 + PrimeNG 21 (última linha MIT) — ver [ADR 0001](adr/0001-decisao-de-stack-web.md) e [ADR 0002](adr/0002-licenca-primeng.md).
 - Regras compartilhadas (ex.: urgência) vivem **no Postgres**, nunca duplicadas em Dart/TS.
 - Mobile continua sendo a ferramenta do dia a dia da médica; o web é para administração e trabalho profundo (tela grande).
 
 ## Fases
 
-### W0 — Fundação _(parcial)_
+### W0 — Fundação
 
 - ~~Decisão de stack~~ — resolvida pelo ADR 0001.
 - [x] Repo + scaffold Angular strict
 - [x] Cliente Supabase + `database.types.ts` versionado (local em Docker, espelhando `prenatalapp`)
 - [x] CI, lint (ESLint/Prettier) — workflow GitHub Actions com lint, typecheck, formatação e build em push/PR para `main`
-- [ ] Tokens do tema Aconchego adaptados para web (PrimeNG design tokens)
-- [ ] Deploy de preview (build estático) + env de produção
+- [x] Tokens do tema Aconchego adaptados para web (PrimeNG design tokens) — [docs/tema-aconchego.md](tema-aconchego.md)
+- [x] Deploy de preview (build estático no GitHub Pages) + env de produção gerado em build (secrets `SUPABASE_URL`/`SUPABASE_ANON_KEY`)
 
 ### W1 — Auth + shell
 

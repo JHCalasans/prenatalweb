@@ -32,6 +32,9 @@ yarn-error.log
 # Miscellaneous
 /.angular/cache
 .sass-cache/
+
+# Environment de produção gerado em build (scripts/write-env.mjs)
+/src/environments/environment.production.ts
 /connect.lock
 /coverage
 /libpeerconnection.log

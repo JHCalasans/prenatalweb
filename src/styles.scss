@@ -1,1 +1,53 @@
-/* You can add global styles to this file, and also import other style files */
+// Mesma ordem registrada no PrimeNG (app.config.ts, cssLayer.order).
+@layer theme, base, primeng;
+
+:root {
+  // Tokens Aconchego fora do alcance do PrimeNG: fundo de página, blobs e vidro.
+  // Espelham prenatalapp/lib/core/theme/aconchego_colors.dart — mapa em docs/tema-aconchego.md.
+  --aconchego-gradiente-inicio: #fdeee4;
+  --aconchego-gradiente-meio: #fbd9c8;
+  --aconchego-gradiente-fim: #f5c4ae;
+  --aconchego-blob-primario: #f9b79c;
+  --aconchego-blob-secundario: #f7cfae;
+  --aconchego-cta-inicio: #e8835f;
+  --aconchego-cta-fim: #d96a48;
+  --aconchego-link: #c15b3a;
+  --aconchego-texto-primario: #4a2c22;
+  --aconchego-texto-secundario: #9a6550;
+  --aconchego-erro: #b3261e;
+}
+
+@layer base {
+  html {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-family: 'Nunito Variable', 'Nunito', ui-rounded, system-ui, sans-serif;
+    color: var(--aconchego-texto-primario);
+    // Gradiente vertical do fundo do mobile (topo 0% → meio 55% → base 100%).
+    background: linear-gradient(
+        180deg,
+        var(--aconchego-gradiente-inicio) 0%,
+        var(--aconchego-gradiente-meio) 55%,
+        var(--aconchego-gradiente-fim) 100%
+      )
+      fixed;
+  }
+
+  a {
+    color: var(--aconchego-link);
+  }
+}
+
+// Superfície de vidro do mobile (cartao_vidro.dart) para cartões de destaque
+// sobre o gradiente. Componentes densos (tabelas, formulários) usam p-card/p-panel.
+.cartao-vidro {
+  background: rgb(255 255 255 / 75%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgb(255 255 255 / 60%);
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgb(214 120 84 / 25%);
+}

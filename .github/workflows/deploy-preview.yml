@@ -1,0 +1,57 @@
+name: Deploy de preview
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Publica o build estático no GitHub Pages (preview contínuo da main).
+# Requer configuração única no repo: Settings → Pages → Source: GitHub Actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build e publicação no Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # Sem os secrets definidos, o prebuild grava placeholders e o preview
+      # publica mesmo assim (login só chega na W1).
+      - name: Build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: npm run build -- --base-href /prenatalweb/
+
+      # Pages não reescreve rotas para index.html; o 404.html carrega a SPA
+      # em links diretos enquanto o router do Angular resolve o caminho.
+      - name: Fallback 404 para SPA
+        run: cp dist/prenatalweb/browser/index.html dist/prenatalweb/browser/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/prenatalweb/browser
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
