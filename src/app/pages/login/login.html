@@ -1,36 +1,49 @@
 <main class="login">
-  <section class="cartao-vidro cartao">
-    <p class="eyebrow">Pré-Natal Web</p>
-    <h1>Entrar</h1>
-    <p class="subtitulo">Acesso restrito à equipe.</p>
+  <div class="login-conteudo">
+    <img class="logo" src="app-logo.png" alt="Pré-Natal Web" />
 
-    <form class="formulario" [formGroup]="formulario" (ngSubmit)="entrar()">
-      <label for="email">E-mail</label>
-      <input id="email" type="email" pInputText autocomplete="email" formControlName="email" />
+    <section class="cartao-vidro cartao">
+      <p class="eyebrow">Pré-Natal Web</p>
+      <h1>Entrar</h1>
+      <p class="subtitulo">Acesso restrito à equipe.</p>
 
-      <label for="senha">Senha</label>
-      <input
-        id="senha"
-        type="password"
-        pInputText
-        autocomplete="current-password"
-        formControlName="senha"
-      />
+      <form class="formulario" [formGroup]="formulario" (ngSubmit)="entrar()">
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" pInputText autocomplete="email" formControlName="email" />
+        </div>
 
-      @if (expirada()) {
-        <p class="aviso" role="status">Sua sessão expirou. Entre novamente.</p>
-      }
+        <div class="campo campo-senha">
+          <label for="senha">Senha</label>
+          <input
+            id="senha"
+            type="password"
+            pInputText
+            autocomplete="current-password"
+            formControlName="senha"
+          />
+          <a class="link-senha" href="#">Esqueci minha senha</a>
+        </div>
 
-      @if (erro()) {
-        <p class="erro" role="alert">{{ erro() }}</p>
-      }
+        <div class="mensagem-formulario" aria-live="polite">
+          @if (expirada()) {
+            <p class="aviso" role="status">Sua sessão expirou. Entre novamente.</p>
+          }
 
-      <p-button
-        type="submit"
-        label="Entrar"
-        [loading]="enviando()"
-        [disabled]="formulario.invalid || enviando()"
-      />
-    </form>
-  </section>
+          @if (erro()) {
+            <p class="erro" role="alert">{{ erro() }}</p>
+          }
+        </div>
+
+        <p-button
+          type="submit"
+          label="Entrar"
+          styleClass="botao-login"
+          fluid
+          [loading]="enviando()"
+          [disabled]="formulario.invalid || enviando()"
+        />
+      </form>
+    </section>
+  </div>
 </main>
