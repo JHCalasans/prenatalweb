@@ -11,12 +11,12 @@
 
 ## Fases
 
-### W0 — Fundação *(parcial)*
+### W0 — Fundação _(parcial)_
 
 - ~~Decisão de stack~~ — resolvida pelo ADR 0001.
 - [x] Repo + scaffold Angular strict
 - [x] Cliente Supabase + `database.types.ts` versionado (local em Docker, espelhando `prenatalapp`)
-- [ ] CI, lint (ESLint/Prettier)
+- [x] CI, lint (ESLint/Prettier) — workflow GitHub Actions com lint, typecheck, formatação e build em push/PR para `main`
 - [ ] Tokens do tema Aconchego adaptados para web (PrimeNG design tokens)
 - [ ] Deploy de preview (build estático) + env de produção
 

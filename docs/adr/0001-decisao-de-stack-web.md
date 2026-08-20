@@ -17,18 +17,18 @@ Aceito — antecipa a decisão da W0, a ser ratificada ao iniciar a fundação.
 
 Stack de frontend:
 
-| Camada | Escolha |
-|---|---|
-| Framework | Angular 22+ standalone + signals |
-| UI | PrimeNG + PrimeIcons |
-| Estilo | Design tokens do PrimeNG adaptando o tema Aconchego |
-| Formulários | Reactive Forms |
-| Estado | Signals + serviços por feature (sem NgRx) |
-| Dados | `@supabase/supabase-js` encapsulado em serviços por domínio; tipos gerados do Postgres (`database.types.ts`) |
-| Rotas/auth | Guards por papel (`secretaria`/`medica`) |
-| Testes | Vitest/Testing Library (unit) + Playwright (E2E) |
-| Qualidade | ESLint + Prettier + TypeScript strict |
-| Deploy | Build estático (sem SSR) |
+| Camada      | Escolha                                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------ |
+| Framework   | Angular 22+ standalone + signals                                                                             |
+| UI          | PrimeNG + PrimeIcons                                                                                         |
+| Estilo      | Design tokens do PrimeNG adaptando o tema Aconchego                                                          |
+| Formulários | Reactive Forms                                                                                               |
+| Estado      | Signals + serviços por feature (sem NgRx)                                                                    |
+| Dados       | `@supabase/supabase-js` encapsulado em serviços por domínio; tipos gerados do Postgres (`database.types.ts`) |
+| Rotas/auth  | Guards por papel (`secretaria`/`medica`)                                                                     |
+| Testes      | Vitest/Testing Library (unit) + Playwright (E2E)                                                             |
+| Qualidade   | ESLint + Prettier + TypeScript strict                                                                        |
+| Deploy      | Build estático (sem SSR)                                                                                     |
 
 ## Alternativas consideradas
 
