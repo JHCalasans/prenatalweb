@@ -14,6 +14,7 @@ export class Shell {
   private readonly auth = inject(AuthService);
 
   protected readonly perfil = this.auth.perfil;
+  protected readonly papel = this.auth.papel;
   protected readonly papelRotulo = computed(() => {
     const papel = this.auth.papel();
     return papel === null ? '' : rotuloPapel(papel);

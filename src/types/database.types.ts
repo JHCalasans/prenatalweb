@@ -527,6 +527,16 @@ export type Database = {
       }
     }
     Functions: {
+      atualizar_paciente_pela_secretaria: {
+        Args: {
+          p_contato_emergencia?: string
+          p_cpf?: string
+          p_data_nascimento?: string
+          p_nome: string
+          p_paciente_id: string
+        }
+        Returns: undefined
+      }
       checklist_da_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: {
@@ -574,6 +584,17 @@ export type Database = {
           paciente_id: string
         }[]
       }
+      criar_paciente_pela_secretaria: {
+        Args: {
+          p_contato_emergencia?: string
+          p_cpf?: string
+          p_data_nascimento?: string
+          p_medica_id: string
+          p_nome: string
+          p_papel_vinculo?: Database["public"]["Enums"]["papel_vinculo"]
+        }
+        Returns: string
+      }
       current_papel: {
         Args: never
         Returns: Database["public"]["Enums"]["papel_usuario"]
@@ -592,6 +613,7 @@ export type Database = {
       }
       gerar_codigo_convite: { Args: never; Returns: string }
       is_medica: { Args: never; Returns: boolean }
+      is_secretaria: { Args: never; Returns: boolean }
       log_documento_acesso: {
         Args: { p_documento_id: string }
         Returns: undefined
@@ -630,6 +652,18 @@ export type Database = {
         Returns: boolean
       }
       paciente_id_for_me: { Args: never; Returns: string }
+      pacientes_da_secretaria: {
+        Args: { p_busca?: string }
+        Returns: {
+          contato_emergencia: string
+          cpf: string
+          data_nascimento: string
+          medicas: string
+          nome: string
+          paciente_id: string
+          tem_acesso: boolean
+        }[]
+      }
       painel_da_medica: {
         Args: never
         Returns: {

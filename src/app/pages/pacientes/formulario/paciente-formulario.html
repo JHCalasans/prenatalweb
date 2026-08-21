@@ -1,0 +1,69 @@
+<section class="cartao-vidro cartao">
+  <p class="eyebrow">Administração</p>
+  <h1>{{ edicao() ? 'Editar paciente' : 'Cadastrar paciente' }}</h1>
+
+  @if (carregando()) {
+    <p class="aviso">Carregando…</p>
+  } @else {
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="salvar()">
+      <label for="nome">Nome completo</label>
+      <input id="nome" type="text" pInputText formControlName="nome" autocomplete="off" />
+
+      @if (!edicao()) {
+        <label for="medica">Médica responsável</label>
+        <p-select
+          inputId="medica"
+          formControlName="medicaId"
+          [options]="medicas()"
+          optionLabel="nome"
+          optionValue="id"
+          placeholder="Selecione a médica"
+        />
+
+        <label for="papel">Tipo de vínculo</label>
+        <p-select
+          inputId="papel"
+          formControlName="papelVinculo"
+          [options]="papeisVinculo"
+          optionLabel="rotulo"
+          optionValue="valor"
+        />
+      }
+
+      <label for="nascimento">Data de nascimento (opcional)</label>
+      <p-datepicker
+        inputId="nascimento"
+        formControlName="dataNascimento"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [maxDate]="hoje"
+      />
+
+      <label for="cpf">CPF (opcional)</label>
+      <p-inputmask
+        inputId="cpf"
+        formControlName="cpf"
+        mask="999.999.999-99"
+        [unmask]="true"
+        placeholder="000.000.000-00"
+      />
+
+      <label for="contato">Contato de emergência (opcional)</label>
+      <input id="contato" type="text" pInputText formControlName="contatoEmergencia" />
+
+      @if (erro()) {
+        <p-message severity="error" [text]="erro()!" />
+      }
+
+      <div class="acoes">
+        <p-button
+          type="submit"
+          [label]="edicao() ? 'Salvar' : 'Cadastrar'"
+          [loading]="salvando()"
+          [disabled]="formulario.invalid || salvando()"
+        />
+        <p-button type="button" label="Cancelar" severity="secondary" routerLink="/pacientes" />
+      </div>
+    </form>
+  }
+</section>

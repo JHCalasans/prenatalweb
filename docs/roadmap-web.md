@@ -31,10 +31,13 @@
 
 ### W2 — Administração da clínica (secretaria)
 
-- Pacientes: cadastro/edição, busca.
-- Convites: emitir (inclusive em lote), reemitir, revogar, acompanhar status sobre `convites_status`.
-- Vínculos: atribuir obstetra/medicina fetal, transferir, inativar.
-- Equipe: gerenciar usuários `medica`/`secretaria`.
+- [x] RLS de escopo `secretaria`: `is_secretaria()` + policies de leitura em `pacientes`, `profiles` e `vinculos` (migration no `prenatalapp`)
+- [x] Pacientes: lista com busca por nome/CPF, cadastro com médica responsável e edição — escrita fechada nas RPCs `criar_paciente_pela_secretaria` / `atualizar_paciente_pela_secretaria`
+- [x] CPF normalizado para 11 dígitos com `check constraint` (migração dos dados existentes + ajuste de `criar_paciente_com_convite`)
+- [x] Cenários 28–32 no `supabase/tests/rls_smoke.sql`
+- [ ] Convites: emitir (inclusive em lote), reemitir, revogar, acompanhar status sobre `convites_status`.
+- [ ] Vínculos: transferir, inativar, segundo vínculo (medicina fetal).
+- [ ] Equipe: gerenciar usuários `medica`/`secretaria`.
 
 ### W3 — Protocolo
 

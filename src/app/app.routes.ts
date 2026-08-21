@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { deslogadoGuard, sessaoGuard } from './core/auth/auth.guard';
+import { deslogadoGuard, papelGuard, sessaoGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -19,6 +19,31 @@ export const routes: Routes = [
       {
         path: 'inicio',
         loadComponent: () => import('./pages/inicio/inicio').then((m) => m.Inicio),
+      },
+      {
+        path: 'pacientes',
+        canActivate: [papelGuard('secretaria')],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./pages/pacientes/lista/pacientes-lista').then((m) => m.PacientesLista),
+          },
+          {
+            path: 'nova',
+            loadComponent: () =>
+              import('./pages/pacientes/formulario/paciente-formulario').then(
+                (m) => m.PacienteFormulario,
+              ),
+          },
+          {
+            path: ':id',
+            loadComponent: () =>
+              import('./pages/pacientes/formulario/paciente-formulario').then(
+                (m) => m.PacienteFormulario,
+              ),
+          },
+        ],
       },
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },
     ],
