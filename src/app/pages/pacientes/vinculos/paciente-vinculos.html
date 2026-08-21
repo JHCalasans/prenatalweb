@@ -1,0 +1,139 @@
+<section class="painel">
+  <h2>Vínculos</h2>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <form class="atribuir" [formGroup]="formulario" (ngSubmit)="atribuir()">
+    <p-select
+      formControlName="medicaId"
+      [options]="medicas()"
+      optionLabel="nome"
+      optionValue="id"
+      placeholder="Selecione a médica"
+      ariaLabel="Médica do novo vínculo"
+    />
+    <p-select
+      formControlName="papel"
+      [options]="papeis"
+      optionLabel="rotulo"
+      optionValue="valor"
+      ariaLabel="Papel do novo vínculo"
+    />
+    <p-button
+      type="submit"
+      label="Atribuir"
+      icon="pi pi-plus"
+      [disabled]="formulario.invalid || agindo()"
+    />
+  </form>
+
+  <p-table [value]="linhas()" [loading]="carregando()" dataKey="vinculo_id">
+    <ng-template #header>
+      <tr>
+        <th>Médica</th>
+        <th>Papel</th>
+        <th>Situação</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-linha>
+      <tr>
+        <td>{{ linha.medica_nome }}</td>
+        <td>{{ rotuloPapel(linha.papel) }}</td>
+        <td>
+          <p-tag
+            [value]="linha.ativo ? 'Ativo' : 'Encerrado'"
+            [severity]="linha.ativo ? 'success' : 'secondary'"
+          />
+        </td>
+        <td class="acoes">
+          @if (linha.ativo) {
+            <p-button
+              label="Transferir"
+              icon="pi pi-arrow-right-arrow-left"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="abrirTransferencia(linha)"
+            />
+            <p-button
+              label="Encerrar"
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="aInativar.set(linha)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4" class="vazio">Nenhum vínculo registrado.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>
+
+<p-dialog
+  header="Encerrar vínculo"
+  [visible]="aInativar() !== null"
+  (visibleChange)="aInativar.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    <strong>{{ aInativar()?.medica_nome }}</strong> deixa de ver esta paciente e ela some do painel
+    dessa médica. O histórico continua registrado.
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aInativar.set(null)" />
+    <p-button
+      label="Encerrar"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarInativacao()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Transferir vínculo"
+  [visible]="aTransferir() !== null"
+  (visibleChange)="aTransferir.set(null)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <p>
+    O vínculo de <strong>{{ rotuloPapel(aTransferir()?.papel ?? '') }}</strong> sai de
+    <strong>{{ aTransferir()?.medica_nome }}</strong> e passa para a médica escolhida. O papel é
+    mantido.
+  </p>
+
+  <form [formGroup]="destino">
+    <p-select
+      formControlName="medicaId"
+      [options]="medicas()"
+      optionLabel="nome"
+      optionValue="id"
+      placeholder="Selecione a nova médica"
+      ariaLabel="Nova médica responsável"
+    />
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aTransferir.set(null)" />
+    <p-button
+      label="Transferir"
+      [disabled]="destino.invalid"
+      [loading]="agindo()"
+      (onClick)="confirmarTransferencia()"
+    />
+  </ng-template>
+</p-dialog>

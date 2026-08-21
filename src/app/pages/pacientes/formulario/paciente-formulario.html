@@ -65,5 +65,9 @@
         <p-button type="button" label="Cancelar" severity="secondary" routerLink="/pacientes" />
       </div>
     </form>
+
+    @if (edicao()) {
+      <app-paciente-vinculos [pacienteId]="id()!" />
+    }
   }
 </section>

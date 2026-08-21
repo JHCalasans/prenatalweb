@@ -37,8 +37,9 @@
 - [x] Cenários 28–32 no `supabase/tests/rls_smoke.sql`
 - [x] Convites: emitir e reemitir (`emitir_convite_pela_secretaria`), revogar pendente, emissão em lote e painel de situação (`convites_da_secretaria`)
 - [x] Cenários 33–37 no `supabase/tests/rls_smoke.sql`
-- [ ] Vínculos: transferir, inativar, segundo vínculo (medicina fetal).
-- [ ] Equipe: gerenciar usuários `medica`/`secretaria`.
+- [x] Vínculos: atribuir, transferir e encerrar no painel de `/pacientes/:id` — RPCs `atribuir_vinculo_pela_secretaria` / `transferir_vinculo_pela_secretaria` / `inativar_vinculo_pela_secretaria`, com o último vínculo ativo protegido
+- [x] Cenários 38–41 no `supabase/tests/rls_smoke.sql`
+- [x] Equipe: criar conta com senha provisória, trocar papel, redefinir senha e desativar/reativar — Edge Function `gerir-equipe` com verificação de papel no servidor
 
 ### W3 — Protocolo
 

@@ -1,0 +1,171 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1>Equipe</h1>
+    </div>
+    <p-button
+      label="Nova conta"
+      icon="pi pi-user-plus"
+      [disabled]="agindo()"
+      (onClick)="criando.set(true)"
+    />
+  </header>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <p-table [value]="membros()" [loading]="carregando()" dataKey="id">
+    <ng-template #header>
+      <tr>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Papel</th>
+        <th>Situação</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-membro>
+      <tr>
+        <td>{{ membro.nome }}</td>
+        <td>{{ membro.email || '—' }}</td>
+        <td>
+          <p-select
+            [ngModel]="membro.papel"
+            [options]="papeis"
+            optionLabel="rotulo"
+            optionValue="valor"
+            [disabled]="agindo() || membro.id === eu()?.id"
+            ariaLabel="Papel"
+            (onChange)="alterarPapel(membro, $event.value)"
+          />
+        </td>
+        <td>
+          <p-tag
+            [value]="membro.ativo ? 'Ativa' : 'Desativada'"
+            [severity]="membro.ativo ? 'success' : 'danger'"
+          />
+        </td>
+        <td class="acoes">
+          <p-button
+            label="Redefinir senha"
+            icon="pi pi-key"
+            severity="secondary"
+            [text]="true"
+            [disabled]="agindo()"
+            (onClick)="redefinirSenha(membro)"
+          />
+          @if (membro.ativo) {
+            <p-button
+              label="Desativar"
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              [disabled]="agindo() || membro.id === eu()?.id"
+              (onClick)="aDesativar.set(membro)"
+            />
+          } @else {
+            <p-button
+              label="Reativar"
+              icon="pi pi-check"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="reativar(membro)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="vazio">Nenhuma conta de equipe.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>
+
+<p-dialog
+  header="Nova conta"
+  [visible]="criando()"
+  (visibleChange)="criando.set(false)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <form class="formulario" [formGroup]="formulario" (ngSubmit)="criar()">
+    <label for="nome">Nome</label>
+    <input id="nome" type="text" pInputText formControlName="nome" autocomplete="off" />
+
+    <label for="email">E-mail</label>
+    <input id="email" type="email" pInputText formControlName="email" autocomplete="off" />
+
+    <label for="papel">Papel</label>
+    <p-select
+      inputId="papel"
+      formControlName="papel"
+      [options]="papeis"
+      optionLabel="rotulo"
+      optionValue="valor"
+    />
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="criando.set(false)" />
+    <p-button
+      label="Criar"
+      [disabled]="formulario.invalid || agindo()"
+      [loading]="agindo()"
+      (onClick)="criar()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Senha provisória"
+  [visible]="senha() !== null"
+  (visibleChange)="fecharSenha()"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+>
+  <p class="alerta">
+    Anote agora: a senha aparece uma única vez. Fechada esta janela, só redefinindo.
+  </p>
+
+  <p class="quem">{{ senhaDe() }}</p>
+  <code>{{ senha() }}</code>
+
+  @if (copiado()) {
+    <p-message severity="success" text="Senha copiada." />
+  }
+
+  <ng-template #footer>
+    <p-button label="Copiar" icon="pi pi-copy" severity="secondary" (onClick)="copiarSenha()" />
+    <p-button label="Fechar" (onClick)="fecharSenha()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Desativar conta"
+  [visible]="aDesativar() !== null"
+  (visibleChange)="aDesativar.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    <strong>{{ aDesativar()?.nome }}</strong> deixa de conseguir entrar no sistema. Os vínculos e o
+    histórico continuam registrados, e a conta pode ser reativada depois.
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aDesativar.set(null)" />
+    <p-button
+      label="Desativar"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarDesativacao()"
+    />
+  </ng-template>
+</p-dialog>

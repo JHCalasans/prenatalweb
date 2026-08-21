@@ -527,6 +527,14 @@ export type Database = {
       }
     }
     Functions: {
+      atribuir_vinculo_pela_secretaria: {
+        Args: {
+          p_medica_id: string
+          p_paciente_id: string
+          p_papel: Database["public"]["Enums"]["papel_vinculo"]
+        }
+        Returns: string
+      }
       atualizar_paciente_pela_secretaria: {
         Args: {
           p_contato_emergencia?: string
@@ -640,6 +648,10 @@ export type Database = {
         Returns: undefined
       }
       gerar_codigo_convite: { Args: never; Returns: string }
+      inativar_vinculo_pela_secretaria: {
+        Args: { p_vinculo_id: string }
+        Returns: undefined
+      }
       is_medica: { Args: never; Returns: boolean }
       is_secretaria: { Args: never; Returns: boolean }
       log_documento_acesso: {
@@ -731,6 +743,21 @@ export type Database = {
       revogar_convite_pela_secretaria: {
         Args: { p_paciente_id: string }
         Returns: number
+      }
+      transferir_vinculo_pela_secretaria: {
+        Args: { p_nova_medica_id: string; p_vinculo_id: string }
+        Returns: string
+      }
+      vinculos_da_paciente: {
+        Args: { p_paciente_id: string }
+        Returns: {
+          ativo: boolean
+          created_at: string
+          medica_id: string
+          medica_nome: string
+          papel: Database["public"]["Enums"]["papel_vinculo"]
+          vinculo_id: string
+        }[]
       }
     }
     Enums: {

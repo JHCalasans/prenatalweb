@@ -9,6 +9,7 @@ import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { deDataIso, paraDataIso } from '../../../core/formato/data';
 import { Medica, PacientesService } from '../../../core/pacientes/pacientes.service';
+import { PacienteVinculos } from '../vinculos/paciente-vinculos';
 
 @Component({
   imports: [
@@ -17,6 +18,7 @@ import { Medica, PacientesService } from '../../../core/pacientes/pacientes.serv
     InputMaskModule,
     InputTextModule,
     MessageModule,
+    PacienteVinculos,
     ReactiveFormsModule,
     RouterLink,
     SelectModule,

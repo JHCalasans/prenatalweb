@@ -1,0 +1,32 @@
+.painel {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--aconchego-texto-primario);
+}
+
+.atribuir {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.acoes {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.vazio {
+  padding: 1.25rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}

@@ -2,6 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { PacientesService } from '../../../core/pacientes/pacientes.service';
+import { VinculosService } from '../../../core/vinculos/vinculos.service';
 import { PacienteFormulario } from './paciente-formulario';
 
 // salvar() navega para /pacientes após o sucesso; sem a rota registrada o
@@ -14,7 +15,17 @@ function montar(servico: Partial<PacientesService>, id: string | null) {
     providers: [
       provideZonelessChangeDetection(),
       provideRouter([{ path: 'pacientes', component: PaginaPacientes }]),
-      { provide: PacientesService, useValue: servico },
+      {
+        provide: PacientesService,
+        useValue: {
+          listarMedicas: vi.fn().mockResolvedValue({ ok: true, valor: [] }),
+          ...servico,
+        },
+      },
+      {
+        provide: VinculosService,
+        useValue: { listar: vi.fn().mockResolvedValue({ ok: true, valor: [] }) },
+      },
       {
         provide: ActivatedRoute,
         useValue: { snapshot: { paramMap: { get: () => id } } },
