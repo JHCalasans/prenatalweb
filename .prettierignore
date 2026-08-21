@@ -2,3 +2,4 @@ src/types
 src/environments/environment.production.ts
 dist
 .angular
+.claude

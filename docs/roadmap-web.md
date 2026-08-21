@@ -35,7 +35,8 @@
 - [x] Pacientes: lista com busca por nome/CPF, cadastro com médica responsável e edição — escrita fechada nas RPCs `criar_paciente_pela_secretaria` / `atualizar_paciente_pela_secretaria`
 - [x] CPF normalizado para 11 dígitos com `check constraint` (migração dos dados existentes + ajuste de `criar_paciente_com_convite`)
 - [x] Cenários 28–32 no `supabase/tests/rls_smoke.sql`
-- [ ] Convites: emitir (inclusive em lote), reemitir, revogar, acompanhar status sobre `convites_status`.
+- [x] Convites: emitir e reemitir (`emitir_convite_pela_secretaria`), revogar pendente, emissão em lote e painel de situação (`convites_da_secretaria`)
+- [x] Cenários 33–37 no `supabase/tests/rls_smoke.sql`
 - [ ] Vínculos: transferir, inativar, segundo vínculo (medicina fetal).
 - [ ] Equipe: gerenciar usuários `medica`/`secretaria`.
 

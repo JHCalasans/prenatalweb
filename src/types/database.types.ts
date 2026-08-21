@@ -557,6 +557,21 @@ export type Database = {
         Returns: undefined
       }
       convite_codigo_hash: { Args: { p_codigo: string }; Returns: string }
+      convites_da_secretaria: {
+        Args: { p_busca?: string; p_situacao?: string }
+        Returns: {
+          ativado_em: string
+          convite_id: string
+          cpf: string
+          criado_em: string
+          expira_em: string
+          medicas: string
+          nome: string
+          paciente_id: string
+          revogado_em: string
+          situacao: string
+        }[]
+      }
       criar_documento_rascunho: {
         Args: {
           p_achado_alterado?: boolean
@@ -598,6 +613,19 @@ export type Database = {
       current_papel: {
         Args: never
         Returns: Database["public"]["Enums"]["papel_usuario"]
+      }
+      emitir_convite_pela_secretaria: {
+        Args: { p_paciente_id: string }
+        Returns: string
+      }
+      emitir_convites_em_lote: {
+        Args: { p_paciente_ids: string[] }
+        Returns: {
+          codigo: string
+          emitido: boolean
+          nome: string
+          paciente_id: string
+        }[]
       }
       encerrar_gestacao: {
         Args: {
@@ -699,6 +727,10 @@ export type Database = {
       registrar_ativacao_convite: {
         Args: { p_codigo_hash: string }
         Returns: string
+      }
+      revogar_convite_pela_secretaria: {
+        Args: { p_paciente_id: string }
+        Returns: number
       }
     }
     Enums: {

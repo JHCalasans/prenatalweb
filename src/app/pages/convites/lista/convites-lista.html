@@ -1,0 +1,160 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Administração</p>
+      <h1>Convites</h1>
+    </div>
+    <p-button
+      label="Emitir em lote ({{ totalSelecionado() }})"
+      icon="pi pi-send"
+      [disabled]="totalSelecionado() === 0 || agindo()"
+      (onClick)="emitirLote()"
+    />
+  </header>
+
+  <form class="filtros" [formGroup]="formulario" (ngSubmit)="carregar()">
+    <input
+      pInputText
+      type="search"
+      formControlName="busca"
+      placeholder="Buscar por nome ou CPF"
+      aria-label="Buscar por nome ou CPF"
+    />
+    <p-select
+      formControlName="situacao"
+      [options]="situacoes"
+      optionLabel="rotulo"
+      optionValue="valor"
+      ariaLabel="Filtrar por situação"
+    />
+    <p-button type="submit" label="Buscar" icon="pi pi-search" [loading]="carregando()" />
+    <p-button type="button" label="Limpar" severity="secondary" (onClick)="limpar()" />
+  </form>
+
+  <p class="dica">
+    Só pacientes sem convite podem entrar no lote. Reemitir revoga o acesso atual e é feito uma
+    paciente por vez.
+  </p>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <p-table
+    [value]="linhas()"
+    [loading]="carregando()"
+    [selection]="selecionadas()"
+    (selectionChange)="selecionadas.set($event)"
+    dataKey="paciente_id"
+    [rows]="20"
+    [paginator]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th class="coluna-selecao"></th>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Médica responsável</th>
+        <th>Situação</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-linha>
+      <tr>
+        <td class="coluna-selecao">
+          <p-tableCheckbox [value]="linha" [disabled]="linha.situacao !== 'sem_convite'" />
+        </td>
+        <td>{{ linha.nome }}</td>
+        <td>{{ formatarCpf(linha.cpf) || '—' }}</td>
+        <td>{{ linha.medicas || '—' }}</td>
+        <td>
+          <p-tag [value]="rotulo(linha.situacao)" [severity]="severidade(linha.situacao)" />
+        </td>
+        <td class="acoes">
+          <p-button
+            [label]="linha.situacao === 'sem_convite' ? 'Emitir' : 'Reemitir'"
+            icon="pi pi-send"
+            severity="secondary"
+            [text]="true"
+            [disabled]="agindo()"
+            (onClick)="emitir(linha)"
+          />
+          @if (linha.situacao === 'pendente') {
+            <p-button
+              label="Revogar"
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="aRevogar.set(linha)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="vazio">Nenhuma paciente encontrada.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>
+
+<p-dialog
+  header="Códigos gerados"
+  [visible]="emitidos().length > 0"
+  (visibleChange)="fecharCodigos()"
+  [modal]="true"
+  [style]="{ width: '34rem' }"
+>
+  <p class="alerta">
+    Anote agora: o código aparece uma única vez. Fechada esta janela, só reemitindo.
+  </p>
+
+  <ul class="codigos">
+    @for (item of emitidos(); track item.paciente_id) {
+      <li>
+        <span class="quem">{{ item.nome }}</span>
+        @if (item.codigo) {
+          <code>{{ item.codigo }}</code>
+        } @else {
+          <span class="pulado">já tinha convite — não foi emitido</span>
+        }
+      </li>
+    }
+  </ul>
+
+  @if (copiado()) {
+    <p-message severity="success" text="Códigos copiados." />
+  }
+
+  <ng-template #footer>
+    <p-button label="Copiar tudo" icon="pi pi-copy" severity="secondary" (onClick)="copiarTudo()" />
+    <p-button label="Fechar" (onClick)="fecharCodigos()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Revogar convite"
+  [visible]="aRevogar() !== null"
+  (visibleChange)="aRevogar.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    O código pendente de <strong>{{ aRevogar()?.nome }}</strong> deixa de funcionar. Para dar acesso
+    depois, emita um novo.
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aRevogar.set(null)" />
+    <p-button
+      label="Revogar"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarRevogacao()"
+    />
+  </ng-template>
+</p-dialog>

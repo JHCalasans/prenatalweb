@@ -45,6 +45,12 @@ export const routes: Routes = [
           },
         ],
       },
+      {
+        path: 'convites',
+        canActivate: [papelGuard('secretaria')],
+        loadComponent: () =>
+          import('./pages/convites/lista/convites-lista').then((m) => m.ConvitesLista),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },
     ],
   },
