@@ -56,6 +56,12 @@ export const routes: Routes = [
         canActivate: [papelGuard('secretaria')],
         loadComponent: () => import('./pages/equipe/lista/equipe-lista').then((m) => m.EquipeLista),
       },
+      {
+        path: 'protocolo',
+        canActivate: [papelGuard('medica')],
+        loadComponent: () =>
+          import('./pages/protocolo/lista/protocolo-lista').then((m) => m.ProtocoloLista),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },
     ],
   },

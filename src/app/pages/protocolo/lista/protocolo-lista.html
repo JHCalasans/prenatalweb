@@ -1,0 +1,196 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Clínica</p>
+      <h1>Protocolo</h1>
+    </div>
+    <div class="botoes">
+      <p-button
+        [label]="mostrarAposentados() ? 'Ocultar aposentados' : 'Mostrar aposentados'"
+        icon="pi pi-eye"
+        severity="secondary"
+        [disabled]="agindo()"
+        (onClick)="alternarAposentados()"
+      />
+      <p-button
+        label="Novo item"
+        icon="pi pi-plus"
+        [disabled]="agindo()"
+        (onClick)="abrirCriacao()"
+      />
+    </div>
+  </header>
+
+  <p class="dica">
+    Editar um item que alguma gestação já marcou cria uma versão nova: quem marcou continua com a
+    janela antiga.
+  </p>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <p-table
+    [value]="itens()"
+    [loading]="carregando()"
+    dataKey="item_id"
+    rowGroupMode="subheader"
+    groupRowsBy="trimestre"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Item</th>
+        <th>Janela</th>
+        <th>Obrigatório</th>
+        <th>Em uso</th>
+        <th>Situação</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #groupheader let-item>
+      <tr>
+        <td colspan="6" class="grupo">{{ item.trimestre }}º trimestre</td>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-item>
+      <tr>
+        <td>{{ item.nome }}</td>
+        <td>{{ item.semana_ini }}–{{ item.semana_fim }} sem</td>
+        <td>{{ item.obrigatorio ? 'Sim' : 'Não' }}</td>
+        <td>{{ item.marcacoes }}</td>
+        <td>
+          <p-tag
+            [value]="item.ativo ? 'Ativo' : 'Aposentado'"
+            [severity]="item.ativo ? 'success' : 'secondary'"
+          />
+        </td>
+        <td class="acoes">
+          @if (item.ativo) {
+            <p-button
+              icon="pi pi-arrow-up"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Subir"
+              [disabled]="agindo()"
+              (onClick)="mover(item, -1)"
+            />
+            <p-button
+              icon="pi pi-arrow-down"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Descer"
+              [disabled]="agindo()"
+              (onClick)="mover(item, 1)"
+            />
+            <p-button
+              label="Editar"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="abrirEdicao(item)"
+            />
+            <p-button
+              label="Aposentar"
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="aAposentar.set(item)"
+            />
+          } @else {
+            <p-button
+              label="Reativar"
+              icon="pi pi-check"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="reativar(item)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="vazio">Nenhum item no protocolo.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>
+
+<p-dialog
+  [header]="editando() ? 'Editar item' : 'Novo item'"
+  [visible]="aberto()"
+  (visibleChange)="fechar()"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+>
+  @if (avisoVersao()) {
+    <p-message
+      severity="warn"
+      text="Este item já foi marcado em alguma gestação. Salvar cria uma versão nova; quem marcou continua com a janela atual."
+    />
+  }
+
+  <form class="formulario" [formGroup]="formulario" (ngSubmit)="salvar()">
+    <label for="nome">Nome do item</label>
+    <input id="nome" type="text" pInputText formControlName="nome" autocomplete="off" />
+
+    <label for="trimestre">Trimestre</label>
+    <p-select
+      inputId="trimestre"
+      formControlName="trimestre"
+      [options]="trimestres"
+      optionLabel="rotulo"
+      optionValue="valor"
+    />
+
+    <label for="ini">Semana inicial</label>
+    <p-inputnumber inputId="ini" formControlName="semanaIni" [min]="0" [max]="42" />
+
+    <label for="fim">Semana final</label>
+    <p-inputnumber inputId="fim" formControlName="semanaFim" [min]="0" [max]="42" />
+
+    <div class="linha">
+      <p-checkbox inputId="obrigatorio" formControlName="obrigatorio" [binary]="true" />
+      <label for="obrigatorio" class="inline">Obrigatório</label>
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="fechar()" />
+    <p-button
+      label="Salvar"
+      [disabled]="formulario.invalid || agindo()"
+      [loading]="agindo()"
+      (onClick)="salvar()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Aposentar item"
+  [visible]="aAposentar() !== null"
+  (visibleChange)="aAposentar.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    <strong>{{ aAposentar()?.nome }}</strong> sai do protocolo das gestações novas. Quem já marcou o
+    item continua vendo no checklist.
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aAposentar.set(null)" />
+    <p-button
+      label="Aposentar"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarAposentadoria()"
+    />
+  </ng-template>
+</p-dialog>

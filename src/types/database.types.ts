@@ -410,6 +410,7 @@ export type Database = {
           nome: string
           obrigatorio: boolean
           ordem: number
+          raiz_id: string
           semana_fim: number
           semana_ini: number
           trimestre: number
@@ -420,6 +421,7 @@ export type Database = {
           nome: string
           obrigatorio?: boolean
           ordem?: number
+          raiz_id: string
           semana_fim: number
           semana_ini: number
           trimestre: number
@@ -430,11 +432,20 @@ export type Database = {
           nome?: string
           obrigatorio?: boolean
           ordem?: number
+          raiz_id?: string
           semana_fim?: number
           semana_ini?: number
           trimestre?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "protocolo_itens_raiz_id_fkey"
+            columns: ["raiz_id"]
+            isOneToOne: false
+            referencedRelation: "protocolo_itens"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vinculos: {
         Row: {
@@ -527,6 +538,10 @@ export type Database = {
       }
     }
     Functions: {
+      aposentar_protocolo_item: {
+        Args: { p_item_id: string }
+        Returns: undefined
+      }
       atribuir_vinculo_pela_secretaria: {
         Args: {
           p_medica_id: string
@@ -544,6 +559,18 @@ export type Database = {
           p_paciente_id: string
         }
         Returns: undefined
+      }
+      atualizar_protocolo_item: {
+        Args: {
+          p_item_id: string
+          p_nome: string
+          p_obrigatorio: boolean
+          p_ordem: number
+          p_semana_fim: number
+          p_semana_ini: number
+          p_trimestre: number
+        }
+        Returns: string
       }
       checklist_da_gestacao: {
         Args: { p_gestacao_id: string }
@@ -615,6 +642,17 @@ export type Database = {
           p_medica_id: string
           p_nome: string
           p_papel_vinculo?: Database["public"]["Enums"]["papel_vinculo"]
+        }
+        Returns: string
+      }
+      criar_protocolo_item: {
+        Args: {
+          p_nome: string
+          p_obrigatorio?: boolean
+          p_ordem?: number
+          p_semana_fim: number
+          p_semana_ini: number
+          p_trimestre: number
         }
         Returns: string
       }
@@ -723,6 +761,21 @@ export type Database = {
           proxima_consulta_em: string
         }[]
       }
+      protocolo_da_clinica: {
+        Args: { p_incluir_aposentados?: boolean }
+        Returns: {
+          ativo: boolean
+          item_id: string
+          marcacoes: number
+          nome: string
+          obrigatorio: boolean
+          ordem: number
+          raiz_id: string
+          semana_fim: number
+          semana_ini: number
+          trimestre: number
+        }[]
+      }
       promover_para_medica: {
         Args: { p_nome?: string; p_user_id: string }
         Returns: undefined
@@ -735,7 +788,12 @@ export type Database = {
         Args: { p_confirmar_comunicado?: boolean; p_documento_id: string }
         Returns: undefined
       }
+      reativar_protocolo_item: {
+        Args: { p_item_id: string }
+        Returns: undefined
+      }
       reemitir_convite: { Args: { p_paciente_id: string }; Returns: string }
+      reordenar_protocolo: { Args: { p_ids: string[] }; Returns: undefined }
       registrar_ativacao_convite: {
         Args: { p_codigo_hash: string }
         Returns: string
@@ -945,4 +1003,3 @@ export const Constants = {
     },
   },
 } as const
-

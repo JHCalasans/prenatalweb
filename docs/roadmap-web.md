@@ -43,8 +43,9 @@
 
 ### W3 — Protocolo
 
-- CRUD de `protocolo_itens` (janela `semana_ini`/`semana_fim`, trimestre, obrigatório, ordem).
-- Edição não retroage sobre checklists já gerados — vale para gestações novas (ou versionamento simples).
+- [x] CRUD de `protocolo_itens` em `/protocolo` (janela `semana_ini`/`semana_fim`, trimestre, obrigatório, ordem), restrito a `medica`
+- [x] Versionamento por item: editar item já marcado aposenta a versão antiga e cria substituta na mesma `raiz_id`; `checklist_da_gestacao` escolhe uma versão por raiz
+- [x] Cenários 42–46 no `supabase/tests/rls_smoke.sql`
 
 ### W4 — Mesa de trabalho da médica (web)
 

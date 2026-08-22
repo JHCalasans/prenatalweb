@@ -20,6 +20,12 @@
           <span>Equipe</span>
         </a>
       }
+      @if (papel() === 'medica') {
+        <a routerLink="/protocolo" routerLinkActive="ativo">
+          <i class="pi pi-list-check" aria-hidden="true"></i>
+          <span>Protocolo</span>
+        </a>
+      }
     </nav>
   </aside>
 
