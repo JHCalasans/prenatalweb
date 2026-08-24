@@ -21,6 +21,10 @@
         </a>
       }
       @if (papel() === 'medica') {
+        <a routerLink="/mesa" routerLinkActive="ativo">
+          <i class="pi pi-users" aria-hidden="true"></i>
+          <span>Minhas pacientes</span>
+        </a>
         <a routerLink="/protocolo" routerLinkActive="ativo">
           <i class="pi pi-list-check" aria-hidden="true"></i>
           <span>Protocolo</span>

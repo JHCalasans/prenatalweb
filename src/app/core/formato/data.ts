@@ -21,3 +21,11 @@ export function formatarData(valor: string | null): string {
   const data = deDataIso(valor);
   return data === null ? '' : data.toLocaleDateString('pt-BR');
 }
+
+// `timestamptz` do Postgres: diferente do `date` acima, traz hora e fuso.
+export function formatarDataHora(valor: string | null): string {
+  if (!valor) {
+    return '';
+  }
+  return new Date(valor).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+}

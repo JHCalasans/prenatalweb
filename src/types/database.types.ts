@@ -686,12 +686,21 @@ export type Database = {
         Returns: undefined
       }
       gerar_codigo_convite: { Args: never; Returns: string }
+      ig_semanas: { Args: { p_dpp_final: string }; Returns: number }
       inativar_vinculo_pela_secretaria: {
         Args: { p_vinculo_id: string }
         Returns: undefined
       }
       is_medica: { Args: never; Returns: boolean }
       is_secretaria: { Args: never; Returns: boolean }
+      janela_checklist: {
+        Args: {
+          p_ig_semanas: number
+          p_semana_fim: number
+          p_semana_ini: number
+        }
+        Returns: string
+      }
       log_documento_acesso: {
         Args: { p_documento_id: string }
         Returns: undefined
@@ -746,7 +755,8 @@ export type Database = {
         Args: never
         Returns: {
           achados_para_comunicar: number
-          checklist_janelas: Json
+          checklist_vencendo: number
+          checklist_vencidos: number
           consulta_a_registrar_em: string
           consulta_a_registrar_id: string
           convite_ativado_em: string
@@ -755,11 +765,22 @@ export type Database = {
           dpp_final: string
           faltou_sem_reagendar: boolean
           gestacao_id: string
+          ig_semanas: number
           laudos_para_publicar: number
           nome: string
           paciente_id: string
           proxima_consulta_em: string
+          trimestre: number
+          urgencia_score: number
         }[]
+      }
+      promover_para_medica: {
+        Args: { p_nome?: string; p_user_id: string }
+        Returns: undefined
+      }
+      promover_para_secretaria: {
+        Args: { p_nome?: string; p_user_id: string }
+        Returns: undefined
       }
       protocolo_da_clinica: {
         Args: { p_incluir_aposentados?: boolean }
@@ -776,14 +797,6 @@ export type Database = {
           trimestre: number
         }[]
       }
-      promover_para_medica: {
-        Args: { p_nome?: string; p_user_id: string }
-        Returns: undefined
-      }
-      promover_para_secretaria: {
-        Args: { p_nome?: string; p_user_id: string }
-        Returns: undefined
-      }
       publicar_documento: {
         Args: { p_confirmar_comunicado?: boolean; p_documento_id: string }
         Returns: undefined
@@ -793,11 +806,11 @@ export type Database = {
         Returns: undefined
       }
       reemitir_convite: { Args: { p_paciente_id: string }; Returns: string }
-      reordenar_protocolo: { Args: { p_ids: string[] }; Returns: undefined }
       registrar_ativacao_convite: {
         Args: { p_codigo_hash: string }
         Returns: string
       }
+      reordenar_protocolo: { Args: { p_ids: string[] }; Returns: undefined }
       revogar_convite_pela_secretaria: {
         Args: { p_paciente_id: string }
         Returns: number
@@ -805,6 +818,17 @@ export type Database = {
       transferir_vinculo_pela_secretaria: {
         Args: { p_nova_medica_id: string; p_vinculo_id: string }
         Returns: string
+      }
+      trimestre_ig: { Args: { p_ig_semanas: number }; Returns: number }
+      urgencia_score: {
+        Args: {
+          p_achados_para_comunicar: number
+          p_checklist_vencendo: number
+          p_checklist_vencidos: number
+          p_faltou_sem_reagendar: boolean
+          p_laudos_para_publicar: number
+        }
+        Returns: number
       }
       vinculos_da_paciente: {
         Args: { p_paciente_id: string }
@@ -1003,3 +1027,4 @@ export const Constants = {
     },
   },
 } as const
+

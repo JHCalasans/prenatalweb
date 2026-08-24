@@ -1,0 +1,106 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Clínica</p>
+      <h1>Minhas pacientes</h1>
+    </div>
+    <p-button
+      label="Atualizar"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [loading]="carregando()"
+      (onClick)="carregar()"
+    />
+  </header>
+
+  <p class="dica">Ordenadas por urgência: achado alterado parado vem sempre primeiro.</p>
+
+  <form class="filtros" [formGroup]="formulario" (ngSubmit)="aplicar()">
+    <input
+      pInputText
+      type="search"
+      formControlName="busca"
+      placeholder="Buscar por nome"
+      aria-label="Buscar por nome"
+    />
+    <p-select
+      formControlName="trimestre"
+      [options]="trimestres"
+      optionLabel="rotulo"
+      optionValue="valor"
+      ariaLabel="Filtrar por trimestre"
+    />
+    <p-select
+      formControlName="pendencia"
+      [options]="pendencias"
+      optionLabel="rotulo"
+      optionValue="valor"
+      ariaLabel="Filtrar por pendência"
+    />
+    <p-button type="submit" label="Filtrar" icon="pi pi-filter" />
+    <p-button type="button" label="Limpar" severity="secondary" (onClick)="limpar()" />
+  </form>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <p-table
+    [value]="linhas()"
+    [loading]="carregando()"
+    dataKey="paciente_id"
+    [rows]="25"
+    [paginator]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Paciente</th>
+        <th>IG</th>
+        <th>Próxima consulta</th>
+        <th>Pendências</th>
+        <th>Acesso</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-p>
+      <tr>
+        <td>{{ p.nome }}</td>
+        <td>
+          @if (p.ig_semanas !== null) {
+            {{ p.ig_semanas }} sem · {{ p.trimestre }}º tri
+          } @else {
+            <span class="apagado">Sem gestação ativa</span>
+          }
+        </td>
+        <td>{{ formatarDataHora(p.proxima_consulta_em) || '—' }}</td>
+        <td class="pendencias">
+          @if (p.achados_para_comunicar > 0) {
+            <p-tag severity="danger" [value]="p.achados_para_comunicar + ' a comunicar'" />
+          }
+          @if (p.checklist_vencidos > 0) {
+            <p-tag severity="danger" [value]="p.checklist_vencidos + ' vencidos'" />
+          }
+          @if (p.faltou_sem_reagendar) {
+            <p-tag severity="warn" value="Faltou" />
+          }
+          @if (p.laudos_para_publicar > 0) {
+            <p-tag severity="info" [value]="p.laudos_para_publicar + ' a publicar'" />
+          }
+          @if (p.checklist_vencendo > 0) {
+            <p-tag severity="warn" [value]="p.checklist_vencendo + ' vencendo'" />
+          }
+          @if (p.urgencia_score === 0) {
+            <span class="apagado">Em dia</span>
+          }
+        </td>
+        <td>{{ statusAcesso(p) }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="vazio">Nenhuma paciente encontrada.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>

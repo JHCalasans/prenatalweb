@@ -1,4 +1,4 @@
-import { deDataIso, formatarData, paraDataIso } from './data';
+import { deDataIso, formatarData, formatarDataHora, paraDataIso } from './data';
 
 describe('formato de data', () => {
   it('converte Date para o dia civil sem deslocar o fuso', () => {
@@ -16,5 +16,11 @@ describe('formato de data', () => {
   it('formata em pt-BR e tolera nulo', () => {
     expect(formatarData('1995-04-10')).toBe('10/04/1995');
     expect(formatarData(null)).toBe('');
+  });
+
+  it('formata timestamptz com data e hora e tolera nulo', () => {
+    // Sem sufixo de fuso o JS interpreta como hora local: saída determinística.
+    expect(formatarDataHora('2026-03-12T14:30:00')).toBe('12/03/2026, 14:30');
+    expect(formatarDataHora(null)).toBe('');
   });
 });

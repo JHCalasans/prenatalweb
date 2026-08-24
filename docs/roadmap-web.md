@@ -49,8 +49,9 @@
 
 ### W4 — Mesa de trabalho da médica (web)
 
-- Lista densa de pacientes com filtros (trimestre, vínculo, status) e ordenação por urgência.
-- **Pré-requisito de backend**: regra de urgência no Postgres (view/função) compartilhada com o mobile.
+- [x] Regra de urgência no Postgres (`ig_semanas`, `trimestre_ig`, `janela_checklist`, `urgencia_score`); `painel_da_medica` devolve a classificação pronta e ordenada, e `urgencia.dart` deixou de existir no mobile
+- [x] Lista densa de pacientes em `/mesa` com busca, filtros de trimestre e pendência, ordenada por urgência
+- [x] Cenários 47–49 no `supabase/tests/rls_smoke.sql`
 - Cartão da gestante completo (dados, gestações, vínculos, consultas, checklist, documentos).
 - Upload de PDF (laudos recebidos por e-mail) + fluxo rascunho → publicar com os mesmos gates (`publicado_em`, `comunicado_presencialmente`).
 
