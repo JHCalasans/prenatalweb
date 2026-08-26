@@ -59,6 +59,7 @@
         <th>Próxima consulta</th>
         <th>Pendências</th>
         <th>Acesso</th>
+        <th></th>
       </tr>
     </ng-template>
 
@@ -94,12 +95,21 @@
           }
         </td>
         <td>{{ statusAcesso(p) }}</td>
+        <td class="acoes">
+          <p-button
+            label="Abrir"
+            icon="pi pi-arrow-right"
+            severity="secondary"
+            [text]="true"
+            [routerLink]="['/mesa', p.paciente_id]"
+          />
+        </td>
       </tr>
     </ng-template>
 
     <ng-template #emptymessage>
       <tr>
-        <td colspan="5" class="vazio">Nenhuma paciente encontrada.</td>
+        <td colspan="6" class="vazio">Nenhuma paciente encontrada.</td>
       </tr>
     </ng-template>
   </p-table>

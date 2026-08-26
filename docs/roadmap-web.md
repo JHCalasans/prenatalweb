@@ -52,7 +52,9 @@
 - [x] Regra de urgência no Postgres (`ig_semanas`, `trimestre_ig`, `janela_checklist`, `urgencia_score`); `painel_da_medica` devolve a classificação pronta e ordenada, e `urgencia.dart` deixou de existir no mobile
 - [x] Lista densa de pacientes em `/mesa` com busca, filtros de trimestre e pendência, ordenada por urgência
 - [x] Cenários 47–49 no `supabase/tests/rls_smoke.sql`
-- Cartão da gestante completo (dados, gestações, vínculos, consultas, checklist, documentos).
+- [x] Cartão da gestante em `/mesa/:pacienteId`: dados, gestações, vínculos, consultas, checklist com janela classificada no Postgres e documentos em leitura; marcar item do checklist pela tela
+- [x] `checklist_da_gestacao` devolve a coluna `janela` e `janelaPara` deixou de existir no Dart
+- [x] Cenários 50–52 no `supabase/tests/rls_smoke.sql`
 - Upload de PDF (laudos recebidos por e-mail) + fluxo rascunho → publicar com os mesmos gates (`publicado_em`, `comunicado_presencialmente`).
 
 ### W5 — Agenda da clínica

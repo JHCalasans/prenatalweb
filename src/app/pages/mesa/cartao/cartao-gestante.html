@@ -1,0 +1,232 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">
+        <a routerLink="/mesa">Minhas pacientes</a>
+      </p>
+      <h1>{{ paciente()?.nome || 'Carregando…' }}</h1>
+    </div>
+    <p-button
+      label="Atualizar"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [loading]="carregando()"
+      (onClick)="carregar()"
+    />
+  </header>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @if (!carregando() && paciente()) {
+    <div class="grade">
+      <section class="bloco">
+        <h2>Dados</h2>
+        <dl>
+          <dt>CPF</dt>
+          <dd>{{ formatarCpf(paciente()!.cpf) || '—' }}</dd>
+          <dt>Nascimento</dt>
+          <dd>{{ formatarData(paciente()!.dataNascimento) || '—' }}</dd>
+          <dt>Contato de emergência</dt>
+          <dd>{{ paciente()!.contatoEmergencia || '—' }}</dd>
+        </dl>
+      </section>
+
+      <section class="bloco">
+        <h2>Equipe</h2>
+        @if (vinculos().length === 0) {
+          <p class="vazio">Nenhum vínculo registrado.</p>
+        } @else {
+          <ul class="lista">
+            @for (v of vinculos(); track v.vinculo_id) {
+              <li>
+                <span>{{ v.medica_nome }}</span>
+                <p-tag
+                  [value]="v.papel === 'obstetra' ? 'Obstetra' : 'Medicina fetal'"
+                  [severity]="v.ativo ? 'success' : 'secondary'"
+                />
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+    <section class="bloco">
+      <h2>Gestações</h2>
+      @if (gestacoes().length === 0) {
+        <p class="vazio">Nenhuma gestação cadastrada.</p>
+      } @else {
+        <p-table [value]="gestacoes()" dataKey="id">
+          <ng-template #header>
+            <tr>
+              <th>DPP</th>
+              <th>Origem</th>
+              <th>Tipo</th>
+              <th>Situação</th>
+              <th>Desfecho</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-g>
+            <tr>
+              <td>{{ formatarData(g.dppFinal) }}</td>
+              <td>{{ g.dppOrigem === 'dum' ? 'DUM' : 'USG' }}</td>
+              <td>{{ g.tipo === 'unica' ? 'Única' : 'Gemelar' }}</td>
+              <td>
+                <p-tag
+                  [value]="g.status === 'ativa' ? 'Ativa' : 'Encerrada'"
+                  [severity]="g.status === 'ativa' ? 'success' : 'secondary'"
+                />
+              </td>
+              <td>{{ g.desfecho || '—' }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </section>
+
+    @if (gestacaoAtual()) {
+      <section class="bloco">
+        <h2>Consultas</h2>
+        @if (consultas().length === 0) {
+          <p class="vazio">Nenhuma consulta registrada.</p>
+        } @else {
+          <p-table [value]="consultas()" dataKey="id">
+            <ng-template #header>
+              <tr>
+                <th>Quando</th>
+                <th>Tipo</th>
+                <th>Local</th>
+                <th>Situação</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-c>
+              <tr>
+                <td>{{ formatarDataHora(c.dataHora) }}</td>
+                <td>{{ c.tipo }}</td>
+                <td>{{ c.local || '—' }}</td>
+                <td>{{ c.status }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      </section>
+
+      <section class="bloco">
+        <h2>Checklist do protocolo</h2>
+        <p class="dica">{{ pendentes() }} item(ns) vencido(s) ou vencendo.</p>
+        <p-table [value]="checklist()" dataKey="protocolo_item_id">
+          <ng-template #header>
+            <tr>
+              <th>Item</th>
+              <th>Janela</th>
+              <th>Situação</th>
+              <th>Status</th>
+              <th>Data</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-i>
+            <tr>
+              <td>{{ i.nome }}</td>
+              <td>{{ i.semana_ini }}–{{ i.semana_fim }} sem</td>
+              <td>
+                <p-tag [value]="janelaRotulo(i.janela)" [severity]="janelaSeveridade(i.janela)" />
+              </td>
+              <td>{{ statusRotulo(i.status) }}</td>
+              <td>{{ formatarData(i.data) || '—' }}</td>
+              <td class="acoes">
+                @if (gestacaoAtiva()) {
+                  <p-button
+                    label="Marcar"
+                    icon="pi pi-check"
+                    severity="secondary"
+                    [text]="true"
+                    [disabled]="agindo()"
+                    (onClick)="abrirMarcacao(i)"
+                  />
+                }
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="6" class="vazio">Nenhum item no protocolo.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </section>
+
+      <section class="bloco">
+        <h2>Documentos</h2>
+        <p class="dica">Publicar e enviar arquivo chegam na próxima fatia da W4.</p>
+        @if (documentos().length === 0) {
+          <p class="vazio">Nenhum documento nesta gestação.</p>
+        } @else {
+          <p-table [value]="documentos()" dataKey="id">
+            <ng-template #header>
+              <tr>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Data do exame</th>
+                <th>Situação</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-d>
+              <tr>
+                <td>{{ d.titulo }}</td>
+                <td>{{ d.tipo }}</td>
+                <td>{{ formatarData(d.dataExame) || '—' }}</td>
+                <td>
+                  <p-tag
+                    [value]="documentoRotulo(d)"
+                    [severity]="d.publicadoEm ? 'success' : 'warn'"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      </section>
+    } @else {
+      <section class="bloco">
+        <p class="vazio">
+          Sem gestação cadastrada: consultas, checklist e documentos aparecem quando houver uma.
+        </p>
+      </section>
+    }
+  }
+</section>
+
+<p-dialog
+  header="Marcar item do checklist"
+  [visible]="aMarcar() !== null"
+  (visibleChange)="aMarcar.set(null)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <p class="quem">{{ aMarcar()?.nome }}</p>
+
+  <form class="formulario" [formGroup]="marcacao" (ngSubmit)="confirmarMarcacao()">
+    <label for="status">Status</label>
+    <p-select
+      inputId="status"
+      formControlName="status"
+      [options]="statusOpcoes"
+      optionLabel="rotulo"
+      optionValue="valor"
+    />
+
+    <label for="data">Data (opcional)</label>
+    <p-datepicker inputId="data" formControlName="data" dateFormat="dd/mm/yy" [showIcon]="true" />
+
+    <label for="obs">Observação (opcional)</label>
+    <input id="obs" type="text" pInputText formControlName="observacao" />
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aMarcar.set(null)" />
+    <p-button label="Salvar" [loading]="agindo()" (onClick)="confirmarMarcacao()" />
+  </ng-template>
+</p-dialog>

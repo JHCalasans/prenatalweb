@@ -1,0 +1,127 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+
+  a {
+    color: var(--aconchego-link);
+    text-decoration: none;
+  }
+}
+
+h1 {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--aconchego-texto-primario);
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--aconchego-texto-primario);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.25rem;
+}
+
+.bloco {
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 55%);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.375rem 1rem;
+  margin: 0;
+}
+
+dt {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--aconchego-texto-secundario);
+}
+
+dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--aconchego-texto-primario);
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-weight: 600;
+  }
+}
+
+.dica {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.acoes {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.vazio {
+  margin: 0;
+  padding: 1rem 0;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.quem {
+  margin: 0 0 0.75rem;
+  font-weight: 800;
+  color: var(--aconchego-texto-primario);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--aconchego-texto-secundario);
+  }
+}

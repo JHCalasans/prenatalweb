@@ -65,7 +65,17 @@ export const routes: Routes = [
       {
         path: 'mesa',
         canActivate: [papelGuard('medica')],
-        loadComponent: () => import('./pages/mesa/lista/mesa-lista').then((m) => m.MesaLista),
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/mesa/lista/mesa-lista').then((m) => m.MesaLista),
+          },
+          {
+            path: ':pacienteId',
+            loadComponent: () =>
+              import('./pages/mesa/cartao/cartao-gestante').then((m) => m.CartaoGestante),
+          },
+        ],
       },
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },
     ],

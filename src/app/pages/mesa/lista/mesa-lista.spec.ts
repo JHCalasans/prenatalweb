@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { MesaService, PacienteMesa } from '../../../core/mesa/mesa.service';
 import { MesaLista } from './mesa-lista';
 
@@ -46,7 +47,11 @@ const semGestacao = {
 function montar(listar: ReturnType<typeof vi.fn>) {
   TestBed.configureTestingModule({
     imports: [MesaLista],
-    providers: [provideZonelessChangeDetection(), { provide: MesaService, useValue: { listar } }],
+    providers: [
+      provideZonelessChangeDetection(),
+      provideRouter([]),
+      { provide: MesaService, useValue: { listar } },
+    ],
   });
   return TestBed.createComponent(MesaLista);
 }

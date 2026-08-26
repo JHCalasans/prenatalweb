@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
@@ -18,6 +19,7 @@ type Pendencia = 'laudos' | 'achados' | 'checklist' | 'faltas';
     InputTextModule,
     MessageModule,
     ReactiveFormsModule,
+    RouterLink,
     TableModule,
     SelectModule,
     TagModule,

@@ -576,6 +576,7 @@ export type Database = {
         Args: { p_gestacao_id: string }
         Returns: {
           data: string
+          janela: string
           nome: string
           obrigatorio: boolean
           observacao: string
