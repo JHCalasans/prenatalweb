@@ -59,7 +59,9 @@
 
 ### W5 — Agenda da clínica
 
-- Visão semanal/mensal, criar/reagendar/cancelar, marcar falta, filtro por médica. Faltas alimentam pendências.
+- [x] RPCs da agenda no Postgres (`agenda_da_clinica`, `agendar_consulta`, `reagendar_consulta`, `cancelar_consulta`, `marcar_falta`) para secretaria e médica; o trigger `consultas_set_medica` passa a forçar o autor só quando quem insere é médica, e a secretaria agenda em nome da médica vinculada — ver [plano-w5-agenda.md](plano-w5-agenda.md)
+- [x] Cenários 53–59 no `supabase/tests/rls_smoke.sql` (incluindo falta marcada pela web acendendo `faltou_sem_reagendar` no painel)
+- [x] `/agenda`: tabela densa agrupada por dia com visão semanal/mensal, filtro por médica (secretaria) e por situação; criar, reagendar, cancelar e marcar falta. Registrar consulta como realizada continua só no mobile.
 
 ### W6 — Auditoria + relatórios
 

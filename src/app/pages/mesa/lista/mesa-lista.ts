@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
@@ -12,6 +12,8 @@ import { normalizarBusca } from '../../../core/formato/texto';
 import { MesaService, PacienteMesa } from '../../../core/mesa/mesa.service';
 
 type Pendencia = 'laudos' | 'achados' | 'checklist' | 'faltas';
+
+const PENDENCIAS_VALIDAS: readonly Pendencia[] = ['laudos', 'achados', 'checklist', 'faltas'];
 
 @Component({
   imports: [
@@ -31,6 +33,7 @@ type Pendencia = 'laudos' | 'achados' | 'checklist' | 'faltas';
 export class MesaLista implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly mesa = inject(MesaService);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly todas = signal<PacienteMesa[]>([]);
   protected readonly carregando = signal(true);
@@ -86,7 +89,16 @@ export class MesaLista implements OnInit {
   protected readonly total = computed(() => this.linhas().length);
 
   ngOnInit(): void {
+    this.aplicarPendenciaDaUrl();
     void this.carregar();
+  }
+
+  // A home entra aqui pelos chips de pendência (/mesa?pendencia=...).
+  private aplicarPendenciaDaUrl(): void {
+    const valor = this.route.snapshot.queryParamMap.get('pendencia') as Pendencia | null;
+    const pendencia = valor !== null && PENDENCIAS_VALIDAS.includes(valor) ? valor : null;
+    this.pendencia.set(pendencia);
+    this.formulario.controls.pendencia.setValue(pendencia);
   }
 
   protected async carregar(): Promise<void> {

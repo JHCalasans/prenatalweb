@@ -75,24 +75,26 @@
         </td>
         <td>{{ formatarDataHora(p.proxima_consulta_em) || '—' }}</td>
         <td class="pendencias">
-          @if (p.achados_para_comunicar > 0) {
-            <p-tag severity="danger" [value]="p.achados_para_comunicar + ' a comunicar'" />
-          }
-          @if (p.checklist_vencidos > 0) {
-            <p-tag severity="danger" [value]="p.checklist_vencidos + ' vencidos'" />
-          }
-          @if (p.faltou_sem_reagendar) {
-            <p-tag severity="warn" value="Faltou" />
-          }
-          @if (p.laudos_para_publicar > 0) {
-            <p-tag severity="info" [value]="p.laudos_para_publicar + ' a publicar'" />
-          }
-          @if (p.checklist_vencendo > 0) {
-            <p-tag severity="warn" [value]="p.checklist_vencendo + ' vencendo'" />
-          }
-          @if (p.urgencia_score === 0) {
-            <span class="apagado">Em dia</span>
-          }
+          <div class="pendencias-tags">
+            @if (p.achados_para_comunicar > 0) {
+              <p-tag severity="danger" [value]="p.achados_para_comunicar + ' a comunicar'" />
+            }
+            @if (p.checklist_vencidos > 0) {
+              <p-tag severity="danger" [value]="p.checklist_vencidos + ' vencidos'" />
+            }
+            @if (p.faltou_sem_reagendar) {
+              <p-tag severity="warn" value="Faltou" />
+            }
+            @if (p.laudos_para_publicar > 0) {
+              <p-tag severity="info" [value]="p.laudos_para_publicar + ' a publicar'" />
+            }
+            @if (p.checklist_vencendo > 0) {
+              <p-tag severity="warn" [value]="p.checklist_vencendo + ' vencendo'" />
+            }
+            @if (p.urgencia_score === 0) {
+              <span class="apagado">Em dia</span>
+            }
+          </div>
         </td>
         <td>{{ statusAcesso(p) }}</td>
         <td class="acoes">

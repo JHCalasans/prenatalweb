@@ -1,6 +1,113 @@
-<section class="cartao-vidro cartao">
-  <p class="eyebrow">Início</p>
-  <h1>Olá, {{ perfil()?.nome }}</h1>
-  <p class="subtitulo">Você está conectada como {{ papelRotulo() }}.</p>
-  <p class="aviso">Convites, vínculos e equipe chegam nas próximas fatias da W2.</p>
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Início</p>
+      <h1>Olá, {{ perfil()?.nome }}</h1>
+      <p class="dica">{{ hojeRotulo }}</p>
+    </div>
+    <p-button
+      label="Atualizar"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [loading]="carregando()"
+      (onClick)="carregar()"
+    />
+  </header>
+
+  @if (ehMedica()) {
+    @if (erroMesa(); as mensagem) {
+      <p-message severity="error" [text]="mensagem" />
+    } @else {
+      <nav class="mesa-hoje cartao-vidro" aria-label="Pendências da mesa">
+        @if (mesaEmDia()) {
+          <p class="em-dia">Mesa em dia — nenhuma pendência pede atenção agora.</p>
+          <a routerLink="/mesa">Ver a mesa</a>
+        } @else {
+          <span class="rotulo">Mesa hoje</span>
+          @for (chip of pendenciaChips(); track chip.pendencia) {
+            <a
+              class="chip {{ nivelChip(chip) }}"
+              [routerLink]="['/mesa']"
+              [queryParams]="{ pendencia: chip.pendencia }"
+            >
+              <strong>{{ chip.total }}</strong> {{ chip.rotulo }}
+            </a>
+          }
+        }
+      </nav>
+    }
+
+    <div class="colunas">
+      <section class="cartao-vidro cartao" aria-label="Pacientes que pedem atenção">
+        <h2>Comece por aqui</h2>
+        @if (topUrgencias().length > 0) {
+          <ul class="urgencias">
+            @for (p of topUrgencias(); track p.paciente_id) {
+              <li class="nivel-{{ nivelUrgencia(p) }}">
+                <a class="linha" [routerLink]="['/mesa', p.paciente_id]">
+                  <span class="nome">{{ p.nome }}</span>
+                  <span class="gestacao">{{ gestacaoRotulo(p) }}</span>
+                  <span class="resumo">{{ resumoPendencias(p) }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else if (erroMesa() === null) {
+          <p class="vazio">Nenhuma paciente pede atenção agora.</p>
+        }
+        <a routerLink="/mesa" class="rodape">Mesa completa</a>
+      </section>
+
+      <section class="cartao-vidro cartao" aria-label="Consultas de hoje">
+        <h2>Agenda de hoje</h2>
+        @if (erroAgenda(); as mensagem) {
+          <p-message severity="error" [text]="mensagem" />
+        } @else if (consultasDeHoje().length > 0) {
+          <ul class="consultas">
+            @for (c of consultasDeHoje(); track c.consulta_id) {
+              <li>
+                <span class="hora">{{ formatarHora(c.data_hora) }}</span>
+                <span class="info">
+                  <a [routerLink]="['/mesa', c.paciente_id]">{{ c.nome }}</a>
+                  <span class="tipo">{{ c.tipo }}</span>
+                </span>
+                @if (c.status !== 'agendada') {
+                  <span class="status {{ c.status }}">{{ rotuloStatus(c.status) }}</span>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="vazio">Nenhuma consulta hoje.</p>
+        }
+        <a routerLink="/agenda" class="rodape">Agenda completa</a>
+      </section>
+    </div>
+  } @else {
+    <section class="cartao-vidro cartao" aria-label="Consultas de hoje">
+      <h2>Agenda de hoje</h2>
+      @if (erroAgenda(); as mensagem) {
+        <p-message severity="error" [text]="mensagem" />
+      } @else if (consultasDeHoje().length > 0) {
+        <ul class="consultas">
+          @for (c of consultasDeHoje(); track c.consulta_id) {
+            <li>
+              <span class="hora">{{ formatarHora(c.data_hora) }}</span>
+              <span class="info">
+                <a [routerLink]="['/pacientes', c.paciente_id]">{{ c.nome }}</a>
+                <span class="tipo">{{ c.tipo }}</span>
+                <span class="medica">{{ c.medica_nome }}</span>
+              </span>
+              @if (c.status !== 'agendada') {
+                <span class="status {{ c.status }}">{{ rotuloStatus(c.status) }}</span>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="vazio">Nenhuma consulta hoje na clínica.</p>
+      }
+      <a routerLink="/agenda" class="rodape">Agenda completa</a>
+    </section>
+  }
 </section>

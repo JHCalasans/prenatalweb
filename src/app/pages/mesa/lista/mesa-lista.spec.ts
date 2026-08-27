@@ -1,6 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { MesaService, PacienteMesa } from '../../../core/mesa/mesa.service';
 import { MesaLista } from './mesa-lista';
 
@@ -44,13 +44,14 @@ const semGestacao = {
   trimestre: null,
 };
 
-function montar(listar: ReturnType<typeof vi.fn>) {
+function montar(listar: ReturnType<typeof vi.fn>, rota?: object) {
   TestBed.configureTestingModule({
     imports: [MesaLista],
     providers: [
       provideZonelessChangeDetection(),
       provideRouter([]),
       { provide: MesaService, useValue: { listar } },
+      ...(rota ? [{ provide: ActivatedRoute, useValue: rota }] : []),
     ],
   });
   return TestBed.createComponent(MesaLista);
@@ -114,6 +115,37 @@ describe('MesaLista', () => {
     componente.formulario.setValue({ busca: '', trimestre: null, pendencia: 'achados' });
     componente.aplicar();
     expect(componente.total()).toBe(1);
+  });
+
+  it('aplica a pendência recebida pela URL', async () => {
+    const comLaudos = {
+      ...base,
+      paciente_id: 'p4',
+      nome: 'Neide Porto',
+      laudos_para_publicar: 2,
+      urgencia_score: 20,
+    };
+    const rota = {
+      snapshot: {
+        queryParamMap: {
+          get: (chave: string) => (chave === 'pendencia' ? 'laudos' : null),
+        },
+      },
+    };
+    const fixture = montar(
+      vi.fn().mockResolvedValue({ ok: true, valor: [urgente, comLaudos] }),
+      rota,
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const componente = fixture.componentInstance as unknown as Interno;
+    expect(componente.total()).toBe(1);
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toContain('Neide Porto');
+    expect(texto).not.toContain('Zilda Souza');
   });
 
   it('mostra a mensagem de erro do serviço', async () => {

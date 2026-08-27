@@ -538,6 +538,31 @@ export type Database = {
       }
     }
     Functions: {
+      agenda_da_clinica: {
+        Args: { p_ate: string; p_de: string; p_medica_id?: string }
+        Returns: {
+          consulta_id: string
+          data_hora: string
+          gestacao_id: string
+          local: string
+          medica_id: string
+          medica_nome: string
+          nome: string
+          paciente_id: string
+          status: Database["public"]["Enums"]["status_consulta"]
+          tipo: string
+        }[]
+      }
+      agendar_consulta: {
+        Args: {
+          p_data_hora: string
+          p_local?: string
+          p_medica_id: string
+          p_paciente_id: string
+          p_tipo?: string
+        }
+        Returns: string
+      }
       aposentar_protocolo_item: {
         Args: { p_item_id: string }
         Returns: undefined
@@ -572,6 +597,7 @@ export type Database = {
         }
         Returns: string
       }
+      cancelar_consulta: { Args: { p_consulta_id: string }; Returns: undefined }
       checklist_da_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: {
@@ -723,6 +749,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      marcar_falta: { Args: { p_consulta_id: string }; Returns: undefined }
       medica_vinculada_a_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: boolean
@@ -800,6 +827,10 @@ export type Database = {
       }
       publicar_documento: {
         Args: { p_confirmar_comunicado?: boolean; p_documento_id: string }
+        Returns: undefined
+      }
+      reagendar_consulta: {
+        Args: { p_consulta_id: string; p_data_hora: string }
         Returns: undefined
       }
       reativar_protocolo_item: {

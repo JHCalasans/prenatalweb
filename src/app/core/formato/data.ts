@@ -29,3 +29,11 @@ export function formatarDataHora(valor: string | null): string {
   }
   return new Date(valor).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 }
+
+// Só o horário, para linhas já agrupadas por dia.
+export function formatarHora(valor: string | null): string {
+  if (!valor) {
+    return '';
+  }
+  return new Date(valor).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}

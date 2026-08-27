@@ -48,7 +48,12 @@ h1 {
 }
 
 .pendencias {
+  max-width: 14rem;
+}
+
+.pendencias-tags {
   display: flex;
+  align-items: center;
   gap: 0.375rem;
   flex-wrap: wrap;
 }

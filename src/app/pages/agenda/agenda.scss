@@ -1,0 +1,105 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .acoes {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aconchego-link);
+}
+
+h1 {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--aconchego-texto-primario);
+}
+
+.dica {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.filtros {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    color: var(--aconchego-texto-primario);
+
+    span {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--aconchego-texto-secundario);
+    }
+  }
+}
+
+.acoes {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.apagado {
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.vazio-periodo {
+  padding: 1.5rem 0;
+  text-align: center;
+}
+
+.quem {
+  margin: 0 0 0.75rem;
+  font-weight: 800;
+  color: var(--aconchego-texto-primario);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--aconchego-texto-secundario);
+  }
+}
