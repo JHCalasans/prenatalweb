@@ -55,7 +55,7 @@
 - [x] Cartão da gestante em `/mesa/:pacienteId`: dados, gestações, vínculos, consultas, checklist com janela classificada no Postgres e documentos em leitura; marcar item do checklist pela tela
 - [x] `checklist_da_gestacao` devolve a coluna `janela` e `janelaPara` deixou de existir no Dart
 - [x] Cenários 50–52 no `supabase/tests/rls_smoke.sql`
-- Upload de PDF (laudos recebidos por e-mail) + fluxo rascunho → publicar com os mesmos gates (`publicado_em`, `comunicado_presencialmente`).
+- [x] Upload de PDF/imagem de laudo no cartão da gestante: fluxo rascunho → upload → publicar com o gate de achado alterado (publicar exige confirmar `comunicado_presencialmente`); excluir rascunho, abrir arquivo em nova aba e leitura auditada (`log_documento_acesso`). Gestante segue vendo só o publicado; app Flutter inalterado.
 
 ### W5 — Agenda da clínica
 

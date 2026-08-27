@@ -3,12 +3,26 @@ import { TestBed } from '@angular/core/testing';
 import { SUPABASE_CLIENT } from '../supabase-client';
 import { CartaoService } from './cartao.service';
 
-function clienteFalso(resposta: { data?: unknown; error?: unknown }) {
+interface Resposta {
+  data?: unknown;
+  error?: unknown;
+}
+
+function clienteFalso(resposta: Resposta, rpcs: Record<string, Resposta> = {}) {
   const retorno = { data: resposta.data ?? null, error: resposta.error ?? null };
   const order = vi.fn().mockResolvedValue(retorno);
   const maybeSingle = vi.fn().mockResolvedValue(retorno);
+  const upload = vi.fn().mockResolvedValue({ data: { path: 'documento' }, error: null });
+  const download = vi.fn().mockResolvedValue({ data: new Blob(['arquivo']), error: null });
   return {
-    rpc: vi.fn().mockResolvedValue(retorno),
+    rpc: vi.fn((nome: string) => {
+      const especifica = rpcs[nome];
+      return Promise.resolve(
+        especifica === undefined
+          ? retorno
+          : { data: especifica.data ?? null, error: especifica.error ?? null },
+      );
+    }),
     order,
     maybeSingle,
     from: vi.fn().mockReturnValue({
@@ -16,6 +30,9 @@ function clienteFalso(resposta: { data?: unknown; error?: unknown }) {
         eq: vi.fn().mockReturnValue({ order, maybeSingle }),
       }),
     }),
+    storage: {
+      from: vi.fn().mockReturnValue({ upload, download }),
+    },
   };
 }
 
@@ -107,5 +124,169 @@ describe('CartaoService', () => {
     });
 
     expect(resultado).toEqual({ ok: false, mensagem: 'Gestação não está ativa' });
+  });
+
+  it('cria o rascunho, sobe o arquivo e confirma, nessa ordem', async () => {
+    const cliente = clienteFalso(
+      { data: null },
+      {
+        criar_documento_rascunho: {
+          data: [{ documento_id: 'd1', storage_path: 'gestacoes/g1/d1.pdf' }],
+        },
+      },
+    );
+    const service = criar(cliente);
+    const arquivo = new File(['conteúdo'], 'laudo.pdf');
+
+    const resultado = await service.criarRascunho({
+      gestacaoId: 'g1',
+      tipo: 'laudo_usg',
+      titulo: 'USG morfologia',
+      dataExame: null,
+      achadoAlterado: false,
+      arquivo,
+    });
+
+    expect(resultado).toEqual({ ok: true, valor: 'd1' });
+    const { upload } = cliente.storage.from('documentos');
+    expect(cliente.rpc.mock.invocationCallOrder[0]).toBeLessThan(
+      upload.mock.invocationCallOrder[0],
+    );
+    expect(upload.mock.invocationCallOrder[0]).toBeLessThan(
+      cliente.rpc.mock.invocationCallOrder[1],
+    );
+    expect(cliente.rpc).toHaveBeenNthCalledWith(1, 'criar_documento_rascunho', {
+      p_gestacao_id: 'g1',
+      p_tipo: 'laudo_usg',
+      p_titulo: 'USG morfologia',
+      p_extensao: 'pdf',
+      p_data_exame: undefined,
+      p_achado_alterado: false,
+    });
+    expect(upload).toHaveBeenCalledWith('gestacoes/g1/d1.pdf', arquivo, {
+      contentType: 'application/pdf',
+    });
+    expect(cliente.rpc).toHaveBeenNthCalledWith(2, 'confirmar_upload_documento', {
+      p_documento_id: 'd1',
+    });
+    expect(cliente.rpc).toHaveBeenCalledTimes(2);
+  });
+
+  it('desfaz o rascunho quando o upload falha', async () => {
+    const cliente = clienteFalso(
+      { data: null },
+      {
+        criar_documento_rascunho: {
+          data: [{ documento_id: 'd1', storage_path: 'gestacoes/g1/d1.pdf' }],
+        },
+      },
+    );
+    const { upload } = cliente.storage.from('documentos');
+    upload.mockResolvedValue({ data: null, error: { message: 'objeto grande demais' } });
+    const service = criar(cliente);
+
+    const resultado = await service.criarRascunho({
+      gestacaoId: 'g1',
+      tipo: 'laudo_usg',
+      titulo: 'USG morfologia',
+      dataExame: null,
+      achadoAlterado: false,
+      arquivo: new File(['conteúdo'], 'laudo.pdf'),
+    });
+
+    expect(resultado).toEqual({
+      ok: false,
+      mensagem: 'Não foi possível concluir. Tente novamente.',
+    });
+    expect(cliente.rpc).toHaveBeenCalledWith('excluir_documento_rascunho', {
+      p_documento_id: 'd1',
+    });
+    expect(cliente.rpc).not.toHaveBeenCalledWith('confirmar_upload_documento', expect.anything());
+  });
+
+  it('recusa extensão fora da lista sem chamar a RPC', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente);
+
+    const resultado = await service.criarRascunho({
+      gestacaoId: 'g1',
+      tipo: 'laudo_usg',
+      titulo: 'USG morfologia',
+      dataExame: null,
+      achadoAlterado: false,
+      arquivo: new File(['conteúdo'], 'laudo.docx'),
+    });
+
+    expect(resultado.ok).toBe(false);
+    expect((resultado as { mensagem: string }).mensagem).toBe(
+      'Extensão não suportada. Envie PDF, JPG ou PNG.',
+    );
+    expect(cliente.rpc).not.toHaveBeenCalled();
+  });
+
+  it('recusa arquivo acima de 20 MB sem chamar a RPC', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente);
+    const arquivo = new File(['conteúdo'], 'laudo.pdf');
+    Object.defineProperty(arquivo, 'size', { value: 21 * 1024 * 1024 });
+
+    const resultado = await service.criarRascunho({
+      gestacaoId: 'g1',
+      tipo: 'laudo_usg',
+      titulo: 'USG morfologia',
+      dataExame: null,
+      achadoAlterado: false,
+      arquivo,
+    });
+
+    expect(resultado.ok).toBe(false);
+    expect((resultado as { mensagem: string }).mensagem).toBe('Arquivo acima de 20 MB.');
+    expect(cliente.rpc).not.toHaveBeenCalled();
+  });
+
+  it('publicar repassa a confirmação do comunicado', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente);
+
+    await service.publicar('d1', true);
+
+    expect(cliente.rpc).toHaveBeenCalledWith('publicar_documento', {
+      p_documento_id: 'd1',
+      p_confirmar_comunicado: true,
+    });
+  });
+
+  it('registrar leitura engola o erro da auditoria', async () => {
+    const cliente = clienteFalso({ data: null });
+    cliente.rpc.mockRejectedValueOnce(new Error('rede caiu'));
+    const service = criar(cliente);
+
+    await expect(service.registrarLeitura('d1')).resolves.toBeUndefined();
+    expect(cliente.rpc).toHaveBeenCalledWith('log_documento_acesso', { p_documento_id: 'd1' });
+  });
+
+  it('abrirArquivo devolve o blob baixado', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente);
+
+    const resultado = await service.abrirArquivo('gestacoes/g1/d1.pdf');
+
+    expect(resultado.ok).toBe(true);
+    const { download } = cliente.storage.from('documentos');
+    expect(download).toHaveBeenCalledWith('gestacoes/g1/d1.pdf');
+  });
+
+  it('abrirArquivo devolve erro genérico quando o download falha', async () => {
+    const cliente = clienteFalso({ data: null });
+    const { download } = cliente.storage.from('documentos');
+    download.mockResolvedValue({ data: null, error: { message: 'não encontrado' } });
+    const service = criar(cliente);
+
+    const resultado = await service.abrirArquivo('gestacoes/g1/d1.pdf');
+
+    expect(resultado).toEqual({
+      ok: false,
+      mensagem: 'Não foi possível concluir. Tente novamente.',
+    });
   });
 });

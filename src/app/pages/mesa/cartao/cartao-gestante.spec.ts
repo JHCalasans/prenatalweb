@@ -71,6 +71,7 @@ const servicoCompleto = () => ({
   }),
   consultas: vi.fn().mockResolvedValue({ ok: true, valor: [] }),
   checklist: vi.fn().mockResolvedValue({ ok: true, valor: [itemVencido] }),
+  // O CartaoDocumentos embutido injeta este mesmo dublê e chama documentos().
   documentos: vi.fn().mockResolvedValue({ ok: true, valor: [] }),
 });
 
@@ -95,6 +96,8 @@ describe('CartaoGestante', () => {
     expect(texto).toContain('Dra A');
     expect(texto).toContain('Hemograma completo');
     expect(texto).toContain('Vencido');
+    expect(texto).toContain('Documentos');
+    expect(texto).toContain('Nenhum documento nesta gestação');
   });
 
   it('conta os itens vencidos e vencendo', async () => {

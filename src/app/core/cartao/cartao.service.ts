@@ -6,6 +6,7 @@ import { SUPABASE_CLIENT } from '../supabase-client';
 type LinhaChecklist = Database['public']['Functions']['checklist_da_gestacao']['Returns'][number];
 type LinhaVinculo = Database['public']['Functions']['vinculos_da_paciente']['Returns'][number];
 type StatusChecklist = Database['public']['Enums']['status_checklist'];
+type TipoDocumento = Database['public']['Enums']['tipo_documento'];
 
 // O gerador não sabe a nulabilidade das colunas de retorno de função.
 export type ItemChecklist = Omit<LinhaChecklist, 'data' | 'observacao'> & {
@@ -14,7 +15,14 @@ export type ItemChecklist = Omit<LinhaChecklist, 'data' | 'observacao'> & {
 };
 
 export type VinculoCartao = LinhaVinculo;
-export type { StatusChecklist };
+export type { StatusChecklist, TipoDocumento };
+
+// Limites do bucket `documentos`; validar aqui evita criar rascunho que o
+// upload vai recusar.
+export const EXTENSOES_DOCUMENTO = ['pdf', 'jpg', 'jpeg', 'png'];
+export const TAMANHO_MAXIMO_DOCUMENTO = 20 * 1024 * 1024;
+export const ERRO_EXTENSAO_DOCUMENTO = 'Extensão não suportada. Envie PDF, JPG ou PNG.';
+export const ERRO_TAMANHO_DOCUMENTO = 'Arquivo acima de 20 MB.';
 
 export interface PacienteCartao {
   id: string;
@@ -52,6 +60,16 @@ export interface DocumentoCartao {
   comunicadoPresencialmente: boolean;
   publicadoEm: string | null;
   arquivoEnviadoEm: string | null;
+  storagePath: string;
+}
+
+export interface DadosRascunho {
+  gestacaoId: string;
+  tipo: TipoDocumento;
+  titulo: string;
+  dataExame: string | null;
+  achadoAlterado: boolean;
+  arquivo: File;
 }
 
 export interface DadosMarcacao {
@@ -76,6 +94,23 @@ function mensagemDeErro(erro: PostgrestError): string {
 // o `default null` do banco.
 function opcional(valor: string | null): string | undefined {
   return valor === null ? undefined : valor;
+}
+
+// Última extensão em minúsculas, só se o bucket aceita.
+function extensaoDe(nome: string): string | null {
+  const partes = nome.split('.');
+  if (partes.length < 2) {
+    return null;
+  }
+  const extensao = partes[partes.length - 1].toLowerCase();
+  return EXTENSOES_DOCUMENTO.includes(extensao) ? extensao : null;
+}
+
+function mimeDe(extensao: string): string {
+  if (extensao === 'pdf') {
+    return 'application/pdf';
+  }
+  return extensao === 'png' ? 'image/png' : 'image/jpeg';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -175,7 +210,7 @@ export class CartaoService {
     const { data, error } = await this.supabase
       .from('documentos')
       .select(
-        'id, tipo, titulo, data_exame, achado_alterado, comunicado_presencialmente, publicado_em, arquivo_enviado_em',
+        'id, tipo, titulo, data_exame, achado_alterado, comunicado_presencialmente, publicado_em, arquivo_enviado_em, storage_path',
       )
       .eq('gestacao_id', gestacaoId)
       .order('created_at', { ascending: false });
@@ -193,6 +228,7 @@ export class CartaoService {
         comunicadoPresencialmente: d.comunicado_presencialmente,
         publicadoEm: d.publicado_em,
         arquivoEnviadoEm: d.arquivo_enviado_em,
+        storagePath: d.storage_path,
       })),
     };
   }
@@ -209,5 +245,88 @@ export class CartaoService {
       return { ok: false, mensagem: mensagemDeErro(error) };
     }
     return { ok: true, valor: null };
+  }
+
+  async criarRascunho(dados: DadosRascunho): Promise<Resultado<string>> {
+    const extensao = extensaoDe(dados.arquivo.name);
+    if (extensao === null) {
+      return { ok: false, mensagem: ERRO_EXTENSAO_DOCUMENTO };
+    }
+    if (dados.arquivo.size > TAMANHO_MAXIMO_DOCUMENTO) {
+      return { ok: false, mensagem: ERRO_TAMANHO_DOCUMENTO };
+    }
+
+    const { data, error } = await this.supabase.rpc('criar_documento_rascunho', {
+      p_gestacao_id: dados.gestacaoId,
+      p_tipo: dados.tipo,
+      p_titulo: dados.titulo,
+      p_extensao: extensao,
+      p_data_exame: opcional(dados.dataExame),
+      p_achado_alterado: dados.achadoAlterado,
+    });
+    if (error) {
+      return { ok: false, mensagem: mensagemDeErro(error) };
+    }
+    const linha = (data ?? [])[0];
+    if (linha === undefined) {
+      return { ok: false, mensagem: ERRO_GENERICO };
+    }
+
+    // A policy do storage casa objeto e documento pelo `storage_path`, então
+    // a ordem aqui é fixa: rascunho, upload, confirmação.
+    const { error: erroUpload } = await this.supabase.storage
+      .from('documentos')
+      .upload(linha.storage_path, dados.arquivo, { contentType: mimeDe(extensao) });
+    if (erroUpload !== null) {
+      await this.excluirRascunho(linha.documento_id);
+      return { ok: false, mensagem: ERRO_GENERICO };
+    }
+
+    const { error: erroConfirmacao } = await this.supabase.rpc('confirmar_upload_documento', {
+      p_documento_id: linha.documento_id,
+    });
+    if (erroConfirmacao !== null) {
+      await this.excluirRascunho(linha.documento_id);
+      return { ok: false, mensagem: mensagemDeErro(erroConfirmacao) };
+    }
+    return { ok: true, valor: linha.documento_id };
+  }
+
+  async publicar(documentoId: string, confirmarComunicado: boolean): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('publicar_documento', {
+      p_documento_id: documentoId,
+      p_confirmar_comunicado: confirmarComunicado,
+    });
+    if (error) {
+      return { ok: false, mensagem: mensagemDeErro(error) };
+    }
+    return { ok: true, valor: null };
+  }
+
+  async excluirRascunho(documentoId: string): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('excluir_documento_rascunho', {
+      p_documento_id: documentoId,
+    });
+    if (error) {
+      return { ok: false, mensagem: mensagemDeErro(error) };
+    }
+    return { ok: true, valor: null };
+  }
+
+  async abrirArquivo(storagePath: string): Promise<Resultado<Blob>> {
+    const { data, error } = await this.supabase.storage.from('documentos').download(storagePath);
+    // Erro do Storage não é PostgrestError; não há mensagem útil nele.
+    if (error !== null || data === null) {
+      return { ok: false, mensagem: ERRO_GENERICO };
+    }
+    return { ok: true, valor: data };
+  }
+
+  async registrarLeitura(documentoId: string): Promise<void> {
+    try {
+      await this.supabase.rpc('log_documento_acesso', { p_documento_id: documentoId });
+    } catch {
+      // Auditoria: falha aqui não pode impedir a leitura.
+    }
   }
 }

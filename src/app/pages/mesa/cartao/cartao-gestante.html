@@ -158,37 +158,7 @@
         </p-table>
       </section>
 
-      <section class="bloco">
-        <h2>Documentos</h2>
-        <p class="dica">Publicar e enviar arquivo chegam na próxima fatia da W4.</p>
-        @if (documentos().length === 0) {
-          <p class="vazio">Nenhum documento nesta gestação.</p>
-        } @else {
-          <p-table [value]="documentos()" dataKey="id">
-            <ng-template #header>
-              <tr>
-                <th>Título</th>
-                <th>Tipo</th>
-                <th>Data do exame</th>
-                <th>Situação</th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-d>
-              <tr>
-                <td>{{ d.titulo }}</td>
-                <td>{{ d.tipo }}</td>
-                <td>{{ formatarData(d.dataExame) || '—' }}</td>
-                <td>
-                  <p-tag
-                    [value]="documentoRotulo(d)"
-                    [severity]="d.publicadoEm ? 'success' : 'warn'"
-                  />
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        }
-      </section>
+      <app-cartao-documentos [gestacaoId]="gestacaoAtual()!.id" [gestacaoAtiva]="gestacaoAtiva()" />
     } @else {
       <section class="bloco">
         <p class="vazio">

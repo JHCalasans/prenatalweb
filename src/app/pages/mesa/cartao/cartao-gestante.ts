@@ -12,7 +12,6 @@ import { TagModule } from 'primeng/tag';
 import {
   CartaoService,
   ConsultaCartao,
-  DocumentoCartao,
   GestacaoCartao,
   ItemChecklist,
   PacienteCartao,
@@ -21,6 +20,7 @@ import {
 } from '../../../core/cartao/cartao.service';
 import { formatarCpf } from '../../../core/formato/cpf';
 import { deDataIso, formatarData, formatarDataHora, paraDataIso } from '../../../core/formato/data';
+import { CartaoDocumentos } from './cartao-documentos';
 
 type Severidade = 'success' | 'secondary' | 'info' | 'warn' | 'danger';
 
@@ -50,6 +50,7 @@ const STATUS_ROTULO: Record<string, string> = {
 @Component({
   imports: [
     ButtonModule,
+    CartaoDocumentos,
     DatePickerModule,
     DialogModule,
     InputTextModule,
@@ -76,7 +77,6 @@ export class CartaoGestante implements OnInit {
   protected readonly vinculos = signal<VinculoCartao[]>([]);
   protected readonly consultas = signal<ConsultaCartao[]>([]);
   protected readonly checklist = signal<ItemChecklist[]>([]);
-  protected readonly documentos = signal<DocumentoCartao[]>([]);
 
   protected readonly carregando = signal(true);
   protected readonly agindo = signal(false);
@@ -132,16 +132,6 @@ export class CartaoGestante implements OnInit {
     return STATUS_ROTULO[status] ?? status;
   }
 
-  protected documentoRotulo(d: DocumentoCartao): string {
-    if (d.publicadoEm !== null) {
-      return 'Publicado';
-    }
-    if (d.arquivoEnviadoEm === null) {
-      return 'Upload incompleto';
-    }
-    return d.achadoAlterado && !d.comunicadoPresencialmente ? 'Achado a comunicar' : 'Rascunho';
-  }
-
   protected async carregar(): Promise<void> {
     this.erro.set(null);
 
@@ -163,19 +153,16 @@ export class CartaoGestante implements OnInit {
     if (gestacao === null) {
       this.consultas.set([]);
       this.checklist.set([]);
-      this.documentos.set([]);
       return;
     }
 
-    const [consultas, checklist, documentos] = await Promise.all([
+    const [consultas, checklist] = await Promise.all([
       this.cartao.consultas(gestacao.id),
       this.cartao.checklist(gestacao.id),
-      this.cartao.documentos(gestacao.id),
     ]);
 
     this.consultas.set(consultas.ok ? consultas.valor : []);
     this.checklist.set(checklist.ok ? checklist.valor : []);
-    this.documentos.set(documentos.ok ? documentos.valor : []);
   }
 
   protected abrirMarcacao(item: ItemChecklist): void {

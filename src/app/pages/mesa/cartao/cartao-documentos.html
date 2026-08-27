@@ -1,0 +1,178 @@
+<section class="bloco">
+  <div class="topo">
+    <h2>Documentos</h2>
+    @if (gestacaoAtiva()) {
+      <p-button label="Enviar" icon="pi pi-upload" (onClick)="abrirEnvio()" />
+    }
+  </div>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @if (documentos().length === 0) {
+    <p class="vazio">Nenhum documento nesta gestação.</p>
+  } @else {
+    <p-table [value]="documentos()" dataKey="id">
+      <ng-template #header>
+        <tr>
+          <th>Título</th>
+          <th>Tipo</th>
+          <th>Data do exame</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-d>
+        <tr>
+          <td>{{ d.titulo }}</td>
+          <td>{{ tipoRotulo(d.tipo) }}</td>
+          <td>{{ formatarData(d.dataExame) || '—' }}</td>
+          <td>
+            <p-tag [value]="documentoRotulo(d)" [severity]="documentoSeveridade(d)" />
+          </td>
+          <td class="acoes">
+            <p-button
+              label="Abrir"
+              icon="pi pi-eye"
+              severity="secondary"
+              [text]="true"
+              (onClick)="abrir(d)"
+            />
+            @if (d.publicadoEm === null && gestacaoAtiva()) {
+              <p-button
+                label="Publicar"
+                icon="pi pi-check"
+                severity="secondary"
+                [text]="true"
+                [disabled]="agindo()"
+                (onClick)="pedirPublicacao(d)"
+              />
+              <p-button
+                label="Excluir"
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [disabled]="agindo()"
+                (onClick)="aExcluir.set(d)"
+              />
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+</section>
+
+<p-dialog
+  header="Enviar documento"
+  [visible]="enviando()"
+  (visibleChange)="enviando.set($event)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <form class="formulario" [formGroup]="envio" (ngSubmit)="enviar()">
+    <label for="tipo">Tipo</label>
+    <p-select
+      inputId="tipo"
+      formControlName="tipo"
+      [options]="tipos"
+      optionLabel="rotulo"
+      optionValue="valor"
+    />
+
+    <label for="titulo">Título</label>
+    <input id="titulo" type="text" pInputText formControlName="titulo" />
+
+    <label for="dataExame">Data do exame (opcional)</label>
+    <p-datepicker
+      inputId="dataExame"
+      formControlName="dataExame"
+      dateFormat="dd/mm/yy"
+      [showIcon]="true"
+    />
+
+    <div class="caixa">
+      <p-checkbox inputId="achadoAlterado" formControlName="achadoAlterado" [binary]="true" />
+      <label for="achadoAlterado">Há achado alterado a comunicar</label>
+    </div>
+
+    <label for="arquivo">Arquivo (PDF, JPG ou PNG, até 20 MB)</label>
+    <input
+      id="arquivo"
+      class="arquivo"
+      type="file"
+      accept=".pdf,.jpg,.jpeg,.png"
+      (change)="escolherArquivo($event)"
+    />
+    @if (arquivo(); as escolhido) {
+      <p class="dica">Selecionado: {{ escolhido.name }}</p>
+    }
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="enviando.set(false)" />
+    <p-button
+      label="Enviar"
+      [disabled]="envio.invalid || agindo()"
+      [loading]="agindo()"
+      (onClick)="enviar()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Publicar com achado alterado"
+  [visible]="aPublicar() !== null"
+  (visibleChange)="aPublicar.set(null)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <p class="quem">{{ aPublicar()?.titulo }}</p>
+  <p>
+    Este documento tem achado alterado. Ele só chega à gestante depois de você confirmar que a
+    comunicação foi presencial.
+  </p>
+  <div class="caixa">
+    <p-checkbox
+      inputId="comunicado"
+      [binary]="true"
+      [ngModel]="comunicado()"
+      (ngModelChange)="comunicado.set($event)"
+    />
+    <label for="comunicado">Comuniquei o achado presencialmente à gestante</label>
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aPublicar.set(null)" />
+    <p-button
+      label="Publicar"
+      [disabled]="!comunicado()"
+      [loading]="agindo()"
+      (onClick)="confirmarPublicacao()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Excluir rascunho"
+  [visible]="aExcluir() !== null"
+  (visibleChange)="aExcluir.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    Excluir o rascunho de <strong>{{ aExcluir()?.titulo }}</strong
+    >? A gestante não verá este documento.
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aExcluir.set(null)" />
+    <p-button
+      label="Excluir"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarExclusao()"
+    />
+  </ng-template>
+</p-dialog>
