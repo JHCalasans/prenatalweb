@@ -1,0 +1,95 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aconchego-link);
+}
+
+h1 {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--aconchego-texto-primario);
+}
+
+.dica {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.filtros {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+
+  input {
+    flex: 1;
+    min-width: 12rem;
+  }
+}
+
+.acoes {
+  text-align: right;
+}
+
+.vazio {
+  padding: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.resumo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0 0 1rem;
+
+  dt {
+    font-weight: 800;
+    color: var(--aconchego-texto-secundario);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.meta-rotulo {
+  margin: 0 0 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.meta {
+  margin: 0;
+  padding: 0.75rem;
+  max-height: 16rem;
+  overflow: auto;
+  font-size: 0.8125rem;
+  background: var(--aconchego-fundo-suave);
+  border-radius: 0.5rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

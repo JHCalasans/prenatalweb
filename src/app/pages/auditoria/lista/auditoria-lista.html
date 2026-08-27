@@ -1,0 +1,131 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Clínica</p>
+      <h1>Auditoria</h1>
+    </div>
+    <p-button
+      label="Atualizar"
+      icon="pi pi-refresh"
+      severity="secondary"
+      [loading]="carregando()"
+      (onClick)="carregar()"
+    />
+  </header>
+
+  <p class="dica">Quem fez, o quê e sobre qual paciente ou item — o rastro das ações da clínica.</p>
+
+  <form class="filtros" [formGroup]="formulario" (ngSubmit)="aplicar()">
+    <p-datepicker
+      inputId="desde"
+      formControlName="desde"
+      [showIcon]="true"
+      [readonlyInput]="true"
+      ariaLabel="Início do período"
+    />
+    <p-datepicker
+      inputId="ate"
+      formControlName="ate"
+      [showIcon]="true"
+      [readonlyInput]="true"
+      ariaLabel="Fim do período"
+    />
+    <p-select
+      formControlName="acao"
+      [options]="opcoesAcao()"
+      optionLabel="rotulo"
+      optionValue="valor"
+      ariaLabel="Filtrar por ação"
+    />
+    <p-select
+      formControlName="entidade"
+      [options]="entidades"
+      optionLabel="rotulo"
+      optionValue="valor"
+      ariaLabel="Filtrar por entidade"
+    />
+    <input
+      pInputText
+      type="search"
+      formControlName="busca"
+      placeholder="Buscar por quem agiu ou alvo"
+      aria-label="Buscar por quem agiu ou alvo"
+    />
+    <p-button type="submit" label="Filtrar" icon="pi pi-filter" />
+    <p-button type="button" label="Limpar" severity="secondary" (onClick)="limpar()" />
+  </form>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  } @else if (truncado()) {
+    <p-message
+      severity="warn"
+      text="A consulta alcançou o teto de 500 registros e foi truncada. Estreite o período ou filtre por ação para ver o restante."
+    />
+  }
+
+  <p-table
+    [value]="linhas()"
+    [loading]="carregando()"
+    dataKey="registro_id"
+    [rows]="25"
+    [paginator]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Quando</th>
+        <th>Quem</th>
+        <th>Ação</th>
+        <th>Alvo</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-r>
+      <tr>
+        <td>{{ formatarDataHora(r.em) }}</td>
+        <td>{{ quem(r) }}</td>
+        <td>{{ rotuloAcao(r.acao) }}</td>
+        <td>{{ r.alvo || '—' }}</td>
+        <td class="acoes">
+          <p-button
+            label="Detalhe"
+            icon="pi pi-eye"
+            severity="secondary"
+            [text]="true"
+            (onClick)="detalhe.set(r)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="vazio">Nenhum registro no período.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>
+
+<p-dialog
+  header="Detalhe do registro"
+  [visible]="detalhe() !== null"
+  (visibleChange)="detalhe.set(null)"
+  [modal]="true"
+  [style]="{ width: '34rem' }"
+>
+  @if (detalhe(); as r) {
+    <dl class="resumo">
+      <dt>Quando</dt>
+      <dd>{{ formatarDataHora(r.em) }}</dd>
+      <dt>Quem</dt>
+      <dd>{{ quem(r) }}</dd>
+      <dt>Ação</dt>
+      <dd>{{ rotuloAcao(r.acao) }}</dd>
+      <dt>Alvo</dt>
+      <dd>{{ r.alvo || '—' }}</dd>
+    </dl>
+    <p class="meta-rotulo">Dados extras gravados com a ação</p>
+    <pre class="meta">{{ metaFormatado(r) }}</pre>
+  }
+</p-dialog>

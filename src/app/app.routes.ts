@@ -68,6 +68,12 @@ export const routes: Routes = [
           import('./pages/protocolo/lista/protocolo-lista').then((m) => m.ProtocoloLista),
       },
       {
+        path: 'auditoria',
+        canActivate: [papelGuard('medica')],
+        loadComponent: () =>
+          import('./pages/auditoria/lista/auditoria-lista').then((m) => m.AuditoriaLista),
+      },
+      {
         path: 'mesa',
         canActivate: [papelGuard('medica')],
         children: [

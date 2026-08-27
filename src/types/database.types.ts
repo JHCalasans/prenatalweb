@@ -538,6 +538,12 @@ export type Database = {
       }
     }
     Functions: {
+      acoes_auditadas: {
+        Args: never
+        Returns: {
+          acao: string
+        }[]
+      }
       agenda_da_clinica: {
         Args: { p_ate: string; p_de: string; p_medica_id?: string }
         Returns: {
@@ -596,6 +602,25 @@ export type Database = {
           p_trimestre: number
         }
         Returns: string
+      }
+      auditoria_da_clinica: {
+        Args: {
+          p_acao?: string
+          p_ate: string
+          p_desde: string
+          p_entidade?: string
+        }
+        Returns: {
+          acao: string
+          alvo: string
+          ator_id: string
+          ator_nome: string
+          em: string
+          entidade: string
+          entidade_id: string
+          meta: Json
+          registro_id: number
+        }[]
       }
       cancelar_consulta: { Args: { p_consulta_id: string }; Returns: undefined }
       checklist_da_gestacao: {
