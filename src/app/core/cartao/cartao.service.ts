@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
+import { ERRO_GENERICO, ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type LinhaChecklist = Database['public']['Functions']['checklist_da_gestacao']['Returns'][number];
@@ -82,14 +82,6 @@ export interface DadosMarcacao {
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
 
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
-
-// `raise exception` de plpgsql chega como P0001 com a mensagem em português
-// já escrita na RPC.
-function mensagemDeErro(erro: PostgrestError): string {
-  return erro.code === 'P0001' ? erro.message : ERRO_GENERICO;
-}
-
 // Os Args gerados usam `p_x?: string`; undefined omite a chave e a RPC aplica
 // o `default null` do banco.
 function opcional(valor: string | null): string | undefined {
@@ -116,6 +108,7 @@ function mimeDe(extensao: string): string {
 @Injectable({ providedIn: 'root' })
 export class CartaoService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly erros = inject(ErroSupabase);
 
   async paciente(pacienteId: string): Promise<Resultado<PacienteCartao>> {
     const { data, error } = await this.supabase
@@ -124,7 +117,7 @@ export class CartaoService {
       .eq('id', pacienteId)
       .maybeSingle();
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     if (!data) {
       return { ok: false, mensagem: 'Paciente não encontrada.' };
@@ -148,7 +141,7 @@ export class CartaoService {
       .eq('paciente_id', pacienteId)
       .order('created_at', { ascending: false });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return {
       ok: true,
@@ -170,7 +163,7 @@ export class CartaoService {
       p_paciente_id: pacienteId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: data ?? [] };
   }
@@ -182,7 +175,7 @@ export class CartaoService {
       .eq('gestacao_id', gestacaoId)
       .order('data_hora', { ascending: false });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return {
       ok: true,
@@ -201,7 +194,7 @@ export class CartaoService {
       p_gestacao_id: gestacaoId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: (data ?? []) as ItemChecklist[] };
   }
@@ -215,7 +208,7 @@ export class CartaoService {
       .eq('gestacao_id', gestacaoId)
       .order('created_at', { ascending: false });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return {
       ok: true,
@@ -242,7 +235,7 @@ export class CartaoService {
       p_observacao: opcional(dados.observacao),
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -265,7 +258,7 @@ export class CartaoService {
       p_achado_alterado: dados.achadoAlterado,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     const linha = (data ?? [])[0];
     if (linha === undefined) {
@@ -287,7 +280,7 @@ export class CartaoService {
     });
     if (erroConfirmacao !== null) {
       await this.excluirRascunho(linha.documento_id);
-      return { ok: false, mensagem: mensagemDeErro(erroConfirmacao) };
+      return { ok: false, mensagem: this.erros.mensagem(erroConfirmacao) };
     }
     return { ok: true, valor: linha.documento_id };
   }
@@ -298,7 +291,7 @@ export class CartaoService {
       p_confirmar_comunicado: confirmarComunicado,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -308,7 +301,7 @@ export class CartaoService {
       p_documento_id: documentoId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: null };
   }

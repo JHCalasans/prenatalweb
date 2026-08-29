@@ -18,7 +18,9 @@ function criar(
     providers: [
       provideZonelessChangeDetection(),
       { provide: SUPABASE_CLIENT, useValue: cliente },
-      { provide: AuthService, useValue: { papel: () => papel } },
+      // autenticado false: o ambiente de teste não tem token no dispositivo, e
+      // o ErroSupabase só trata P0001 como sessão expirada com tela autenticada.
+      { provide: AuthService, useValue: { papel: () => papel, autenticado: () => false } },
     ],
   });
   return TestBed.inject(AgendaService);

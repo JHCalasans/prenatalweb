@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
+import { ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type LinhaAuditoria = Database['public']['Functions']['auditoria_da_clinica']['Returns'][number];
@@ -20,14 +20,6 @@ export type RegistroAuditoria = Omit<
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
 
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
-
-// `raise exception` de plpgsql chega como P0001 com a mensagem em português
-// já escrita na RPC.
-function mensagemDeErro(erro: PostgrestError): string {
-  return erro.code === 'P0001' ? erro.message : ERRO_GENERICO;
-}
-
 function opcional(valor: string | null): string | undefined {
   return valor === null ? undefined : valor;
 }
@@ -35,6 +27,7 @@ function opcional(valor: string | null): string | undefined {
 @Injectable({ providedIn: 'root' })
 export class AuditoriaService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly erros = inject(ErroSupabase);
 
   // A RPC já devolve ordenado por data decrescente e limitado a 500 linhas.
   async listar(
@@ -50,7 +43,7 @@ export class AuditoriaService {
       p_entidade: opcional(entidade),
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: data ?? [] };
   }
@@ -60,7 +53,7 @@ export class AuditoriaService {
   async acoes(): Promise<Resultado<string[]>> {
     const { data, error } = await this.supabase.rpc('acoes_auditadas');
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: (data ?? []).map((linha) => linha.acao) };
   }

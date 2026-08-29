@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { PapelEquipe } from '../auth/papel';
+import { ERRO_GENERICO } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 export interface MembroEquipe {
@@ -18,8 +19,6 @@ export interface DadosNovoMembro {
 }
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
-
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
 
 @Injectable({ providedIn: 'root' })
 export class EquipeService {

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
 import { AuthService } from '../auth/auth.service';
+import { ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type LinhaAgenda = Database['public']['Functions']['agenda_da_clinica']['Returns'][number];
@@ -27,18 +27,11 @@ export interface DadosNovaConsulta {
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
 
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
-
-// `raise exception` de plpgsql chega como P0001 com a mensagem em português
-// já escrita na RPC.
-function mensagemDeErro(erro: PostgrestError): string {
-  return erro.code === 'P0001' ? erro.message : ERRO_GENERICO;
-}
-
 @Injectable({ providedIn: 'root' })
 export class AgendaService {
   private readonly supabase = inject(SUPABASE_CLIENT);
   private readonly auth = inject(AuthService);
+  private readonly erros = inject(ErroSupabase);
 
   // A RPC já devolve ordenado por data_hora e restrito ao papel do chamador.
   async listar(de: Date, ate: Date, medicaId: string | null): Promise<Resultado<ConsultaAgenda[]>> {
@@ -48,7 +41,7 @@ export class AgendaService {
       p_medica_id: medicaId ?? undefined,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: data ?? [] };
   }
@@ -62,7 +55,7 @@ export class AgendaService {
       p_local: dados.local === null || dados.local.trim() === '' ? undefined : dados.local.trim(),
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: data };
   }
@@ -73,7 +66,7 @@ export class AgendaService {
       p_data_hora: dataHora.toISOString(),
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -83,7 +76,7 @@ export class AgendaService {
       p_consulta_id: consultaId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -93,7 +86,7 @@ export class AgendaService {
       p_consulta_id: consultaId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -104,7 +97,7 @@ export class AgendaService {
     if (this.auth.papel() === 'medica') {
       const { data, error } = await this.supabase.rpc('painel_da_medica');
       if (error) {
-        return { ok: false, mensagem: mensagemDeErro(error) };
+        return { ok: false, mensagem: this.erros.mensagem(error) };
       }
       return {
         ok: true,
@@ -117,7 +110,7 @@ export class AgendaService {
       p_busca: termo === '' ? undefined : termo,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return {
       ok: true,

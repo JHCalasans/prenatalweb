@@ -97,6 +97,13 @@ export class AuthService {
     await this.router.navigate(['/login']);
   }
 
+  // Chamado quando uma RPC volta 401 (PGRST301) no meio do uso. Sem marcar
+  // saidaIntencional: é esse flag que faz o listener de auth navegar para
+  // /login?expirada=1 em vez de só deslogar.
+  async encerrarPorExpiracao(): Promise<void> {
+    await this.supabase.auth.signOut();
+  }
+
   // Perfil de `paciente` é tratado como ausência de acesso: a sessão é
   // descartada antes de qualquer navegação para não sobrar token válido.
   private async carregarPerfil(

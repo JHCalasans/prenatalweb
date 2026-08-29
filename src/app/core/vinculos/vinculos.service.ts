@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
+import { ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type LinhaVinculo = Database['public']['Functions']['vinculos_da_paciente']['Returns'][number];
@@ -10,22 +10,17 @@ export type PapelVinculo = Database['public']['Enums']['papel_vinculo'];
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
 
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
-
-function mensagemDeErro(erro: PostgrestError): string {
-  return erro.code === 'P0001' ? erro.message : ERRO_GENERICO;
-}
-
 @Injectable({ providedIn: 'root' })
 export class VinculosService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly erros = inject(ErroSupabase);
 
   async listar(pacienteId: string): Promise<Resultado<Vinculo[]>> {
     const { data, error } = await this.supabase.rpc('vinculos_da_paciente', {
       p_paciente_id: pacienteId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: data ?? [] };
   }
@@ -41,7 +36,7 @@ export class VinculosService {
       p_papel: papel,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: data };
   }
@@ -51,7 +46,7 @@ export class VinculosService {
       p_vinculo_id: vinculoId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -62,7 +57,7 @@ export class VinculosService {
       p_nova_medica_id: novaMedicaId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.erros.mensagem(error) };
     }
     return { ok: true, valor: data };
   }

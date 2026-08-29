@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
+import { ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type LinhaProtocolo = Database['public']['Functions']['protocolo_da_clinica']['Returns'][number];
@@ -18,28 +19,26 @@ export interface DadosItem {
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
 
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
-
-// `raise exception` de plpgsql chega como P0001 com a mensagem em português
-// já escrita na RPC; 23514 é o check da tabela, que só aparece se a validação
-// da RPC deixar passar algo.
-function mensagemDeErro(erro: PostgrestError): string {
-  if (erro.code === '23514') {
-    return 'Janela de semanas inválida.';
-  }
-  return erro.code === 'P0001' ? erro.message : ERRO_GENERICO;
-}
-
 @Injectable({ providedIn: 'root' })
 export class ProtocoloService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly erros = inject(ErroSupabase);
+
+  // 23514 é o check da tabela, que só aparece se a validação da RPC deixar
+  // passar algo; o resto é delegado ao ErroSupabase.
+  private mensagem(erro: PostgrestError): string {
+    if (erro.code === '23514') {
+      return 'Janela de semanas inválida.';
+    }
+    return this.erros.mensagem(erro);
+  }
 
   async listar(incluirAposentados: boolean): Promise<Resultado<ItemProtocolo[]>> {
     const { data, error } = await this.supabase.rpc('protocolo_da_clinica', {
       p_incluir_aposentados: incluirAposentados,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: data ?? [] };
   }
@@ -54,7 +53,7 @@ export class ProtocoloService {
       p_ordem: dados.ordem,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: data };
   }
@@ -70,7 +69,7 @@ export class ProtocoloService {
       p_ordem: dados.ordem,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: data };
   }
@@ -80,7 +79,7 @@ export class ProtocoloService {
       p_item_id: itemId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -90,7 +89,7 @@ export class ProtocoloService {
       p_item_id: itemId,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: null };
   }
@@ -100,7 +99,7 @@ export class ProtocoloService {
       p_ids: [...ids],
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: null };
   }

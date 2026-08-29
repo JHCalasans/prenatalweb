@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
+import { ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type Funcoes = Database['public']['Functions'];
@@ -33,14 +33,6 @@ export type ConvitePendente = Omit<
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
 
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
-
-// `raise exception` de plpgsql chega como P0001 com a mensagem em português
-// já escrita na RPC.
-function mensagemDeErro(erro: PostgrestError): string {
-  return erro.code === 'P0001' ? erro.message : ERRO_GENERICO;
-}
-
 function opcional<T extends string>(valor: T | null): T | undefined {
   return valor === null ? undefined : valor;
 }
@@ -48,6 +40,7 @@ function opcional<T extends string>(valor: T | null): T | undefined {
 @Injectable({ providedIn: 'root' })
 export class RelatoriosService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly erros = inject(ErroSupabase);
 
   async documentosPublicados(
     desde: string,
@@ -59,7 +52,9 @@ export class RelatoriosService {
       p_ate: ate,
       p_tipo: opcional(tipo),
     });
-    return error ? { ok: false, mensagem: mensagemDeErro(error) } : { ok: true, valor: data ?? [] };
+    return error
+      ? { ok: false, mensagem: this.erros.mensagem(error) }
+      : { ok: true, valor: data ?? [] };
   }
 
   async faltas(desde: string, ate: string, medicaId: string | null): Promise<Resultado<Falta[]>> {
@@ -68,7 +63,9 @@ export class RelatoriosService {
       p_ate: ate,
       p_medica_id: opcional(medicaId),
     });
-    return error ? { ok: false, mensagem: mensagemDeErro(error) } : { ok: true, valor: data ?? [] };
+    return error
+      ? { ok: false, mensagem: this.erros.mensagem(error) }
+      : { ok: true, valor: data ?? [] };
   }
 
   // Retrato de agora: sem período, porque item vencido não é evento datado.
@@ -76,13 +73,17 @@ export class RelatoriosService {
     const { data, error } = await this.supabase.rpc('relatorio_checklist_vencidos', {
       p_incluir_vencendo: incluirVencendo,
     });
-    return error ? { ok: false, mensagem: mensagemDeErro(error) } : { ok: true, valor: data ?? [] };
+    return error
+      ? { ok: false, mensagem: this.erros.mensagem(error) }
+      : { ok: true, valor: data ?? [] };
   }
 
   async convitesPendentes(incluirExpirados: boolean): Promise<Resultado<ConvitePendente[]>> {
     const { data, error } = await this.supabase.rpc('relatorio_convites_pendentes', {
       p_incluir_expirados: incluirExpirados,
     });
-    return error ? { ok: false, mensagem: mensagemDeErro(error) } : { ok: true, valor: data ?? [] };
+    return error
+      ? { ok: false, mensagem: this.erros.mensagem(error) }
+      : { ok: true, valor: data ?? [] };
   }
 }

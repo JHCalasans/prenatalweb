@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
+import { ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type LinhaLista = Database['public']['Functions']['pacientes_da_secretaria']['Returns'][number];
@@ -35,32 +36,27 @@ export interface DadosNovaPaciente extends DadosPaciente {
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
 
-const ERRO_GENERICO = 'Não foi possível concluir. Tente novamente.';
-
 // Os Args gerados usam `p_x?: string`; undefined omite a chave do payload e a
 // RPC aplica o `default null` no banco.
 function opcional(valor: string | null): string | undefined {
   return valor === null ? undefined : valor;
 }
 
-// `raise exception` de plpgsql chega como P0001 com a mensagem em português
-// já escrita na RPC; os demais códigos viram texto legível aqui.
-function mensagemDeErro(erro: PostgrestError): string {
-  if (erro.code === '23505') {
-    return 'Já existe uma paciente cadastrada com este CPF.';
-  }
-  if (erro.code === '23514') {
-    return 'CPF deve ter 11 dígitos.';
-  }
-  if (erro.code === 'P0001') {
-    return erro.message;
-  }
-  return ERRO_GENERICO;
-}
-
 @Injectable({ providedIn: 'root' })
 export class PacientesService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly erros = inject(ErroSupabase);
+
+  // Códigos próprios do cadastro antes de delegar o resto ao ErroSupabase.
+  private mensagem(erro: PostgrestError): string {
+    if (erro.code === '23505') {
+      return 'Já existe uma paciente cadastrada com este CPF.';
+    }
+    if (erro.code === '23514') {
+      return 'CPF deve ter 11 dígitos.';
+    }
+    return this.erros.mensagem(erro);
+  }
 
   async listar(busca: string): Promise<Resultado<PacienteLista[]>> {
     const termo = busca.trim();
@@ -68,7 +64,7 @@ export class PacientesService {
       p_busca: termo === '' ? undefined : termo,
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: data ?? [] };
   }
@@ -80,7 +76,7 @@ export class PacientesService {
       .eq('papel', 'medica')
       .order('nome');
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: data ?? [] };
   }
@@ -92,7 +88,7 @@ export class PacientesService {
       .eq('id', id)
       .maybeSingle();
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     if (!data) {
       return { ok: false, mensagem: 'Paciente não encontrada.' };
@@ -119,7 +115,7 @@ export class PacientesService {
       p_contato_emergencia: opcional(dados.contatoEmergencia),
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: data };
   }
@@ -133,7 +129,7 @@ export class PacientesService {
       p_contato_emergencia: opcional(dados.contatoEmergencia),
     });
     if (error) {
-      return { ok: false, mensagem: mensagemDeErro(error) };
+      return { ok: false, mensagem: this.mensagem(error) };
     }
     return { ok: true, valor: null };
   }

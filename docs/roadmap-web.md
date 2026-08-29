@@ -70,8 +70,13 @@
 
 ### W7 — Hardening + piloto web
 
-- Revisão de RLS para os novos fluxos (sobretudo escopo `secretaria`); estender `supabase/tests/rls_smoke.sql`.
-- Piloto: secretária + 1 médica usando o web em paralelo ao mobile.
+- [x] Revisão de RLS para os novos fluxos (sobretudo escopo `secretaria`) — migration `20260830120000_hardening_w7.sql` no `prenatalapp`: grants de escrita fechados em `documentos` (escrita só por RPC), `gestacoes` (insert do mobile mantido, update/delete fechados) e `pacientes` (update nas quatro colunas de cadastro, delete fechado); gate em `log_documento_acesso`; vínculo nos relatórios clínicos; e `truncate`/`trigger`/`references` revogados de `anon`/`authenticated` em todo o schema (sobra do `grant all` do setup padrão — `truncate` não passa por RLS). Cenários 67–71 no `supabase/tests/rls_smoke.sql` + CORS nas Edge Functions + módulo único de erro do web com sessão expirada — ver [plano-w7-hardening.md](plano-w7-hardening.md) e [ADR 0003](adr/0003-escopo-de-leitura-da-equipe.md)
+- Piloto: secretária + 1 médica usando o web em paralelo ao mobile. Depende de um projeto Supabase hospedado, que ainda não existe. Pendências que o bloqueiam:
+  - Runbook de produção: criar a primeira conta, publicar migrations e Edge Functions, recuperar acesso da secretária — hoje sem SMTP e sem signup isso é lockout da clínica.
+  - Staging separado de `main`.
+  - Telemetria/Sentry (decidir junto com o piloto).
+  - Endurecer `handle_new_user` contra `raw_user_meta_data.paciente_id` forjado (contido hoje por `enable_signup = false`; a correção óbvia quebraria a troca de celular — precisa de desenho próprio).
+  - Ajustes de auth no projeto hospedado: `minimum_password_length = 6`, sem `inactivity_timeout`, `site_url` em localhost.
 
 ## Sequenciamento vs. roadmap mobile
 
