@@ -1,0 +1,132 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Clínica</p>
+      <h1>{{ atual().rotulo }}</h1>
+    </div>
+    <div class="botoes sem-impressao">
+      <p-button
+        label="Atualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="carregando()"
+        (onClick)="carregar()"
+      />
+      <p-button
+        label="Exportar CSV"
+        icon="pi pi-download"
+        severity="secondary"
+        [disabled]="linhas().length === 0"
+        (onClick)="exportar()"
+      />
+      <p-button
+        label="Imprimir"
+        icon="pi pi-print"
+        severity="secondary"
+        [disabled]="linhas().length === 0"
+        (onClick)="imprimir()"
+      />
+    </div>
+  </header>
+
+  <p class="dica">
+    {{ linhas().length }} linha(s) no recorte. A impressão leva a página aberta da tabela — para
+    levar tudo, aumente as linhas por página no rodapé ou exporte o CSV.
+  </p>
+
+  <form class="filtros sem-impressao" [formGroup]="formulario" (ngSubmit)="carregar()">
+    <p-select
+      formControlName="relatorio"
+      [options]="opcoesRelatorio()"
+      optionLabel="rotulo"
+      optionValue="valor"
+      ariaLabel="Escolher o relatório"
+      (onChange)="trocar()"
+    />
+
+    @if (atual().periodo) {
+      <p-datepicker
+        inputId="desde"
+        formControlName="desde"
+        [showIcon]="true"
+        [readonlyInput]="true"
+        ariaLabel="Início do período"
+      />
+      <p-datepicker
+        inputId="ate"
+        formControlName="ate"
+        [showIcon]="true"
+        [readonlyInput]="true"
+        ariaLabel="Fim do período"
+      />
+    }
+
+    @if (atual().porTipo) {
+      <p-select
+        formControlName="tipo"
+        [options]="tipos"
+        optionLabel="rotulo"
+        optionValue="valor"
+        ariaLabel="Filtrar por tipo de documento"
+      />
+    }
+
+    @if (atual().porMedica && ehSecretaria()) {
+      <p-select
+        formControlName="medicaId"
+        [options]="medicaOpcoes()"
+        optionLabel="rotulo"
+        optionValue="valor"
+        ariaLabel="Filtrar por médica"
+      />
+    }
+
+    @if (atual().rotuloAmpliar; as rotuloAmpliar) {
+      <span class="ampliar">
+        <p-checkbox inputId="ampliar" formControlName="ampliar" [binary]="true" />
+        <label for="ampliar">{{ rotuloAmpliar }}</label>
+      </span>
+    }
+
+    <p-button type="submit" label="Filtrar" icon="pi pi-filter" />
+  </form>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  } @else if (truncado()) {
+    <p-message
+      severity="warn"
+      text="A consulta alcançou o teto de 500 linhas e foi truncada. Estreite o recorte para ver o restante."
+    />
+  }
+
+  <p-table
+    [value]="linhas()"
+    [loading]="carregando()"
+    [rows]="25"
+    [paginator]="true"
+    [rowsPerPageOptions]="[25, 100, 500]"
+  >
+    <ng-template #header>
+      <tr>
+        @for (c of colunas(); track c.rotulo) {
+          <th>{{ c.rotulo }}</th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-linha>
+      <tr>
+        @for (c of colunas(); track c.rotulo) {
+          <td>{{ c.valor(linha) }}</td>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td [attr.colspan]="colunas().length" class="vazio">Nada a listar neste recorte.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>

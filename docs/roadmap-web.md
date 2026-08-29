@@ -66,7 +66,7 @@
 ### W6 — Auditoria + relatórios
 
 - [x] Viewer do `audit_log` em `/auditoria` — quem fez, o quê e sobre qual paciente ou item, com período obrigatório, filtros de ação/entidade e busca por quem agiu ou alvo; leitura restrita a `medica` via RPC `security definer` (`auditoria_da_clinica` + índice por data), cenários 60–62 no `supabase/tests/rls_smoke.sql` — ver [plano-w6-auditoria.md](plano-w6-auditoria.md)
-- Relatórios operacionais: documentos publicados, faltas, checklists vencidos, convites pendentes; exportação CSV/PDF.
+- [x] Relatórios operacionais em `/relatorios`: documentos publicados e faltas por período, checklists vencidos e convites pendentes como retrato de agora — uma RPC `security definer` por relatório, com a secretaria vendo faltas e convites e a médica vendo os quatro; exportação CSV (separador `;` e BOM, para o Excel pt-BR) e impressão do navegador com folha `@media print`, sem dependência nova. Cenários 63–66 no `supabase/tests/rls_smoke.sql` — ver [plano-w6-relatorios.md](plano-w6-relatorios.md)
 
 ### W7 — Hardening + piloto web
 

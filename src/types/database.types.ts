@@ -867,6 +867,68 @@ export type Database = {
         Args: { p_codigo_hash: string }
         Returns: string
       }
+      relatorio_checklist_vencidos: {
+        Args: { p_incluir_vencendo?: boolean }
+        Returns: {
+          gestacao_id: string
+          ig_semanas: number
+          item_nome: string
+          janela: string
+          medicas: string
+          obrigatorio: boolean
+          paciente_id: string
+          paciente_nome: string
+          protocolo_item_id: string
+          semana_fim: number
+          semana_ini: number
+          status: Database["public"]["Enums"]["status_checklist"]
+        }[]
+      }
+      relatorio_convites_pendentes: {
+        Args: { p_incluir_expirados?: boolean }
+        Returns: {
+          convite_id: string
+          cpf: string
+          criado_em: string
+          dias_para_expirar: number
+          expira_em: string
+          medicas: string
+          paciente_id: string
+          paciente_nome: string
+          situacao: string
+        }[]
+      }
+      relatorio_documentos_publicados: {
+        Args: {
+          p_ate: string
+          p_desde: string
+          p_tipo?: Database["public"]["Enums"]["tipo_documento"]
+        }
+        Returns: {
+          achado_alterado: boolean
+          comunicado_presencialmente: boolean
+          data_exame: string
+          documento_id: string
+          paciente_nome: string
+          publicado_em: string
+          publicado_por_nome: string
+          tipo: Database["public"]["Enums"]["tipo_documento"]
+          titulo: string
+        }[]
+      }
+      relatorio_faltas: {
+        Args: { p_ate: string; p_desde: string; p_medica_id?: string }
+        Returns: {
+          consulta_id: string
+          data_hora: string
+          local: string
+          medica_nome: string
+          paciente_id: string
+          paciente_nome: string
+          reagendou: boolean
+          tipo: string
+        }[]
+      }
       reordenar_protocolo: { Args: { p_ids: string[] }; Returns: undefined }
       revogar_convite_pela_secretaria: {
         Args: { p_paciente_id: string }

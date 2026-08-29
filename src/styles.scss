@@ -69,3 +69,26 @@
   border-color: #713422;
   background: #713422;
 }
+
+// Impressão dos relatórios: o papel leva a tabela, não a navegação. Marque com
+// .sem-impressao o que só serve na tela (filtros, botões de ação).
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .barra,
+  .topo,
+  .sem-impressao,
+  .p-paginator {
+    display: none !important;
+  }
+
+  .shell {
+    display: block;
+  }
+
+  .conteudo {
+    padding: 0;
+  }
+}

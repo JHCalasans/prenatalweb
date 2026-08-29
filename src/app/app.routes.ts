@@ -26,6 +26,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/agenda/agenda').then((m) => m.Agenda),
       },
       {
+        path: 'relatorios',
+        canActivate: [papelGuard('secretaria', 'medica')],
+        loadComponent: () => import('./pages/relatorios/relatorios').then((m) => m.Relatorios),
+      },
+      {
         path: 'pacientes',
         canActivate: [papelGuard('secretaria')],
         children: [
