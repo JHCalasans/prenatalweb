@@ -3,6 +3,19 @@
 ## Status
 
 Aceito — 2026-08-29, junto com o hardening da W7 (migration `20260830120000_hardening_w7.sql`).
+Amendado na W8 — a exceção do insert direto em `gestacoes` foi encerrada (migration
+`20260831120000_gestacao_web.sql`).
+Amendado na W9 — a secretaria ganhou uma exceção pontual: escreve a DUM e lê a projeção da gestação
+ativa sem desfecho, sempre por RPC (migration `20260901120000_gestacao_pela_secretaria.sql`, ver
+[ADR 0004](0004-cadastro-da-gestacao-pela-secretaria.md)).
+Amendado na W10 — a auditoria da clínica passa a ser lida por `medica` **e** `admin` (o par
+"administra contas + lê o rastro" define o perfil administrativo, ver
+[ADR 0005](0005-perfil-admin.md)); os dois relatórios operacionais (`relatorio_faltas` e
+`relatorio_convites_pendentes`) saem da secretaria e passam para `medica` + `admin`
+(migration `20260902120100_perfil_admin.sql`).
+Amendado pelo [ADR 0006](0006-prontuario-obstetrico.md) (proposto) — o prontuário obstétrico
+segue a leitura clínica por vínculo ativo, a secretaria continua sem acesso e a gestante passa a
+ler só a projeção de medidas da caderneta, por RPC.
 
 ## Contexto
 
@@ -25,17 +38,21 @@ A fronteira é assimétrica de propósito:
 
 - **Escrita clínica sempre por RPC e sempre com vínculo.** `documentos` perdeu o grant de escrita
   direto (só `criar_documento_rascunho` → `confirmar_upload_documento` → `publicar_documento` /
-  `excluir_documento_rascunho`); `gestacoes` guarda o insert direto do mobile mas fecha
-  update/delete; `pacientes` só aceita as quatro colunas de cadastro. Cenários **68** e **69** do
-  `supabase/tests/rls_smoke.sql` provam cada bypass fechado e o caminho legítimo ainda aberto.
+  `excluir_documento_rascunho`); `gestacoes` aceita escrita apenas pelas três RPCs
+  `criar_gestacao` / `atualizar_gestacao` / `encerrar_gestacao` — a exceção do insert direto do
+  mobile, aberta na W7, foi encerrada na W8 com o Flutter migrado para a RPC; `pacientes` só
+  aceita as quatro colunas de cadastro. Cenários **68** e **69** do
+  `supabase/tests/rls_smoke.sql` provam cada bypass fechado e o caminho legítimo ainda aberto;
+  os cenários **72–77** cobrem as RPCs de gestação ponta a ponta.
 - **Leitura clínica por vínculo.** Os relatórios `relatorio_documentos_publicados` e
   `relatorio_checklist_vencidos` passaram a exigir `medica_vinculada_a_gestacao`, alinhando com a
   policy `documentos_select_medica`. Cenário **70** garante que médica sem vínculo recebe zero
   linhas dessa paciente nos dois relatórios.
 - **Auditoria da clínica inteira, de propósito.** O rastro de "quem leu qual laudo" e "quem
   publicou o quê" não funciona recortado por vínculo: a graça é justamente uma médica ver a ação da
-  outra. `auditoria_da_clinica` mantém o gate só de papel (medica), e o trecho final do cenário
-  **70** fixa que médica sem vínculo **continua** enxergando a leitura feita pela colega.
+  outra. `auditoria_da_clinica` mantém o gate só de papel (`medica` e, desde a W10, `admin`), e o
+  trecho final do cenário **70** fixa que médica sem vínculo **continua** enxergando a leitura
+  feita pela colega.
 - **Privilégio de tabela é parte da fronteira, não só a policy.** `truncate` não passa por RLS —
   a policy filtra linha, e `truncate` não olha linha nenhuma. O setup padrão do Supabase concede
   `truncate`, `trigger` e `references` a `anon`/`authenticated` em todo o schema, e os revokes das
@@ -44,7 +61,9 @@ A fronteira é assimétrica de propósito:
   profundidade de defesa; o cenário **71** impede que volte.
 - **Secretaria com a agenda, sem o prontuário.** A secretaria agenda e vê a agenda da clínica
   inteira (desenho da W5/W6), mas não alcança laudo, checklist nem gestação — o cenário **28**
-  já fixava essa separação e segue verde.
+  já fixava essa separação e segue verde. Exceção única (W9, [ADR 0004](0004-cadastro-da-gestacao-pela-secretaria.md)):
+  ela escreve a DUM e lê a projeção da gestação ativa **sem desfecho** por RPC; a tabela
+  `gestacoes` continua sem policy nem grant para ela.
 
 ## Alternativas consideradas
 
@@ -68,4 +87,5 @@ A fronteira é assimétrica de propósito:
 - A assimetria (clínico por vínculo, auditoria inteira) precisa ser explicada; este ADR é a
   explicação.
 - `relatorio_faltas` e `relatorio_convites_pendentes` seguem sem filtro de vínculo (são
-  operacionais, da secretaria); se um dia ganharem dado clínico, a fronteira precisa ser reavaliada.
+  operacionais; desde a W10, de médicas e da administração); se um dia ganharem dado clínico, a
+  fronteira precisa ser reavaliada.

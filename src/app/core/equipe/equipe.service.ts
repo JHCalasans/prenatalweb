@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { PapelEquipe } from '../auth/papel';
-import { ERRO_GENERICO } from '../erro/supabase-erro';
+import { ERRO_GENERICO, ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 export interface MembroEquipe {
@@ -10,7 +10,15 @@ export interface MembroEquipe {
   telefone: string | null;
   email: string | null;
   ativo: boolean;
+  crm: string | null;
+  crmUf: string | null;
 }
+
+// A Edge Function devolve as colunas de CRM como estão no banco.
+type MembroBruto = Omit<MembroEquipe, 'crm' | 'crmUf'> & {
+  crm?: string | null;
+  crm_uf?: string | null;
+};
 
 export interface DadosNovoMembro {
   nome: string;
@@ -23,6 +31,7 @@ export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: strin
 @Injectable({ providedIn: 'root' })
 export class EquipeService {
   private readonly supabase = inject(SUPABASE_CLIENT);
+  private readonly erros = inject(ErroSupabase);
 
   private async chamar<T>(corpo: Record<string, unknown>): Promise<Resultado<T>> {
     const { data, error } = await this.supabase.functions.invoke('gerir-equipe', {
@@ -52,8 +61,35 @@ export class EquipeService {
   }
 
   async listar(): Promise<Resultado<MembroEquipe[]>> {
-    const resultado = await this.chamar<{ membros: MembroEquipe[] }>({ acao: 'listar' });
-    return resultado.ok ? { ok: true, valor: resultado.valor.membros } : resultado;
+    const resultado = await this.chamar<{ membros: MembroBruto[] }>({ acao: 'listar' });
+    if (!resultado.ok) {
+      return resultado;
+    }
+    return {
+      ok: true,
+      valor: resultado.valor.membros.map(({ crm, crm_uf, ...membro }) => ({
+        ...membro,
+        crm: crm ?? null,
+        crmUf: crm_uf ?? null,
+      })),
+    };
+  }
+
+  // CRM não passa pela Edge Function: a RPC já tem o gate de admin e audita.
+  async definirCrm(
+    medicaId: string,
+    crm: string | null,
+    crmUf: string | null,
+  ): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('definir_crm', {
+      p_medica_id: medicaId,
+      p_crm: crm ?? undefined,
+      p_crm_uf: crmUf ?? undefined,
+    });
+    if (error) {
+      return { ok: false, mensagem: this.erros.mensagem(error) };
+    }
+    return { ok: true, valor: null };
   }
 
   async criar(dados: DadosNovoMembro): Promise<Resultado<string>> {

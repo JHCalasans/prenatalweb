@@ -16,6 +16,36 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { PapelEquipe, rotuloPapel } from '../../../core/auth/papel';
 import { EquipeService, MembroEquipe } from '../../../core/equipe/equipe.service';
 
+const UFS = [
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO',
+];
+
 @Component({
   imports: [
     ButtonModule,
@@ -47,6 +77,7 @@ export class EquipeLista implements OnInit {
   protected readonly senhaDe = signal<string>('');
   protected readonly copiado = signal(false);
   protected readonly aDesativar = signal<MembroEquipe | null>(null);
+  protected readonly aDefinirCrm = signal<MembroEquipe | null>(null);
 
   protected readonly eu = this.auth.perfil;
   protected readonly rotuloPapel = rotuloPapel;
@@ -54,7 +85,16 @@ export class EquipeLista implements OnInit {
   protected readonly papeis = [
     { rotulo: 'Médica', valor: 'medica' as PapelEquipe },
     { rotulo: 'Secretaria', valor: 'secretaria' as PapelEquipe },
+    { rotulo: 'Administração', valor: 'admin' as PapelEquipe },
   ];
+
+  protected readonly ufs = UFS.map((uf) => ({ rotulo: uf, valor: uf }));
+
+  // Os dois vazios limpam o CRM; um sem o outro a RPC recusa.
+  protected readonly formularioCrm = this.fb.group({
+    crm: ['', Validators.pattern(/^\s*\d{1,7}\s*$/)],
+    crmUf: [null as string | null],
+  });
 
   protected readonly formulario = this.fb.group({
     nome: ['', [Validators.required, Validators.minLength(3)]],
@@ -156,6 +196,42 @@ export class EquipeLista implements OnInit {
         this.erro.set(resultado.mensagem);
         return;
       }
+      await this.carregar();
+    } finally {
+      this.agindo.set(false);
+    }
+  }
+
+  protected crmRotulo(membro: MembroEquipe): string {
+    return membro.crm === null ? '—' : `${membro.crm}/${membro.crmUf}`;
+  }
+
+  protected abrirCrm(membro: MembroEquipe): void {
+    this.formularioCrm.setValue({ crm: membro.crm ?? '', crmUf: membro.crmUf });
+    this.erro.set(null);
+    this.aDefinirCrm.set(membro);
+  }
+
+  protected async salvarCrm(): Promise<void> {
+    const membro = this.aDefinirCrm();
+    if (membro === null || this.formularioCrm.invalid || this.agindo()) {
+      return;
+    }
+    this.agindo.set(true);
+    this.erro.set(null);
+    try {
+      const { crm, crmUf } = this.formularioCrm.getRawValue();
+      const numero = crm.trim();
+      const resultado = await this.equipe.definirCrm(
+        membro.id,
+        numero === '' ? null : numero,
+        crmUf,
+      );
+      if (!resultado.ok) {
+        this.erro.set(resultado.mensagem);
+        return;
+      }
+      this.aDefinirCrm.set(null);
       await this.carregar();
     } finally {
       this.agindo.set(false);

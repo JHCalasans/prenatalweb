@@ -16,11 +16,16 @@ import {
   ItemChecklist,
   PacienteCartao,
   StatusChecklist,
+  StatusConsulta,
   VinculoCartao,
 } from '../../../core/cartao/cartao.service';
 import { formatarCpf } from '../../../core/formato/cpf';
 import { deDataIso, formatarData, formatarDataHora, paraDataIso } from '../../../core/formato/data';
+import { PacientesService } from '../../../core/pacientes/pacientes.service';
 import { CartaoDocumentos } from './cartao-documentos';
+import { CartaoGestacoes } from './cartao-gestacoes';
+import { CartaoProntuario } from './cartao-prontuario';
+import { CodigoConvite } from '../codigo-convite/codigo-convite';
 
 type Severidade = 'success' | 'secondary' | 'info' | 'warn' | 'danger';
 
@@ -51,6 +56,9 @@ const STATUS_ROTULO: Record<string, string> = {
   imports: [
     ButtonModule,
     CartaoDocumentos,
+    CartaoGestacoes,
+    CartaoProntuario,
+    CodigoConvite,
     DatePickerModule,
     DialogModule,
     InputTextModule,
@@ -68,9 +76,10 @@ const STATUS_ROTULO: Record<string, string> = {
 export class CartaoGestante implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly cartao = inject(CartaoService);
+  private readonly pacientes = inject(PacientesService);
   private readonly rota = inject(ActivatedRoute);
 
-  private readonly pacienteId = this.rota.snapshot.paramMap.get('pacienteId') ?? '';
+  protected readonly pacienteId = this.rota.snapshot.paramMap.get('pacienteId') ?? '';
 
   protected readonly paciente = signal<PacienteCartao | null>(null);
   protected readonly gestacoes = signal<GestacaoCartao[]>([]);
@@ -82,6 +91,9 @@ export class CartaoGestante implements OnInit {
   protected readonly agindo = signal(false);
   protected readonly erro = signal<string | null>(null);
   protected readonly aMarcar = signal<ItemChecklist | null>(null);
+  protected readonly aRegistrar = signal<ConsultaCartao | null>(null);
+  protected readonly aReemitir = signal(false);
+  protected readonly codigoConvite = signal<string | null>(null);
 
   protected readonly formatarCpf = formatarCpf;
   protected readonly formatarData = formatarData;
@@ -98,6 +110,18 @@ export class CartaoGestante implements OnInit {
     status: ['solicitado' as StatusChecklist, Validators.required],
     data: [null as Date | null],
     observacao: [''],
+  });
+
+  // Espelha o registro do app: a consulta que já aconteceu vira
+  // realizada, falta ou cancelamento — nunca volta para agendada.
+  protected readonly registroOpcoes = [
+    { rotulo: 'Realizada', valor: 'realizada' as StatusConsulta },
+    { rotulo: 'Faltou', valor: 'faltou' as StatusConsulta },
+    { rotulo: 'Cancelada', valor: 'cancelada' as StatusConsulta },
+  ];
+
+  protected readonly registro = this.fb.group({
+    status: ['realizada' as StatusConsulta, Validators.required],
   });
 
   // A ativa manda; sem ativa, a mais recente ainda precisa abrir o cartão.
@@ -172,6 +196,63 @@ export class CartaoGestante implements OnInit {
       observacao: item.observacao ?? '',
     });
     this.aMarcar.set(item);
+  }
+
+  // A consulta só se registra depois da hora: agendada futura ainda
+  // pode ser reagendada ou cancelada pela agenda.
+  protected consultaVencida(c: ConsultaCartao): boolean {
+    return new Date(c.dataHora).getTime() <= Date.now();
+  }
+
+  protected abrirRegistro(c: ConsultaCartao): void {
+    this.registro.setValue({ status: 'realizada' });
+    this.erro.set(null);
+    this.aRegistrar.set(c);
+  }
+
+  protected async confirmarReemissao(): Promise<void> {
+    if (this.agindo()) {
+      return;
+    }
+    this.agindo.set(true);
+    this.erro.set(null);
+    try {
+      const resultado = await this.pacientes.reemitirConvite(this.pacienteId);
+      this.aReemitir.set(false);
+      if (!resultado.ok) {
+        this.erro.set(resultado.mensagem);
+        return;
+      }
+      this.codigoConvite.set(resultado.valor);
+    } finally {
+      this.agindo.set(false);
+    }
+  }
+
+  protected fecharCodigoConvite(): void {
+    this.codigoConvite.set(null);
+    void this.carregar();
+  }
+
+  protected async confirmarRegistro(): Promise<void> {
+    const c = this.aRegistrar();
+    const { status } = this.registro.getRawValue();
+    if (c === null || this.agindo()) {
+      return;
+    }
+    this.agindo.set(true);
+    this.erro.set(null);
+    try {
+      const resultado = await this.cartao.registrarConsulta(c.id, status);
+      this.aRegistrar.set(null);
+      if (!resultado.ok) {
+        this.erro.set(resultado.mensagem);
+        return;
+      }
+      await this.carregar();
+    } finally {
+      this.agindo.set(false);
+    }
   }
 
   protected async confirmarMarcacao(): Promise<void> {

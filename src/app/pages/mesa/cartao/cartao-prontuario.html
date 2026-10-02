@@ -1,0 +1,386 @@
+<section class="bloco">
+  <div class="topo">
+    <h2>Prontuário</h2>
+    <p-button
+      label="Nova evolução"
+      icon="pi pi-plus"
+      [disabled]="carregando() || agindo()"
+      (onClick)="novaEvolucao()"
+    />
+  </div>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @for (r of rascunhos(); track r.id) {
+    <div class="evolucao rascunho">
+      <div class="linha">
+        <p-tag value="Rascunho" severity="info" />
+        <span class="quando">{{ formatarDataHora(r.atendidaEm) }}</span>
+        @if (r.retificaId) {
+          <span class="dica">Retificação em andamento</span>
+        }
+        <span class="espaco"></span>
+        <p-button
+          label="Continuar"
+          icon="pi pi-pencil"
+          severity="secondary"
+          [text]="true"
+          (onClick)="continuar(r)"
+        />
+        <p-button
+          label="Excluir"
+          icon="pi pi-trash"
+          severity="danger"
+          [text]="true"
+          [disabled]="agindo()"
+          (onClick)="aExcluir.set(r)"
+        />
+      </div>
+    </div>
+  }
+
+  @if (!carregando() && vigentes().length === 0 && rascunhos().length === 0) {
+    <p class="vazio">Nenhuma evolução nesta gestação.</p>
+  }
+
+  @for (e of vigentes(); track e.id) {
+    <div class="evolucao">
+      <div class="linha">
+        <button type="button" class="alternar" (click)="alternar(e)">
+          <i
+            class="pi"
+            [class.pi-chevron-down]="expandida() === e.id"
+            [class.pi-chevron-right]="expandida() !== e.id"
+          ></i>
+          <span class="quando">{{ formatarDataHora(e.atendidaEm) }}</span>
+        </button>
+        <span class="medida">IG {{ ig(e.igDias) }}</span>
+        <span class="medida">PA {{ pa(e) }}</span>
+        <span class="medida">Peso {{ numero(e.pesoKg) }}</span>
+        <span class="medida">AU {{ numero(e.alturaUterinaCm) }}</span>
+        <span class="medida">BCF {{ e.bcfBpm ?? '—' }}</span>
+        @if (e.retificaId) {
+          <p-tag value="Retificada" severity="warn" />
+        }
+        <span class="espaco"></span>
+        <span class="autora">{{ e.autoraNome }}</span>
+      </div>
+
+      @if (expandida() === e.id) {
+        <dl class="detalhe">
+          <dt>Movimentação fetal</dt>
+          <dd>{{ movimentacaoRotulo(e.movimentacaoFetal) }}</dd>
+          <dt>Edema</dt>
+          <dd>{{ edemaRotulo(e.edema) }}</dd>
+          <dt>Apresentação</dt>
+          <dd>{{ apresentacaoRotulo(e.apresentacao) }}</dd>
+          <dt>Queixa</dt>
+          <dd>{{ e.queixa || '—' }}</dd>
+          <dt>Exame físico</dt>
+          <dd>{{ e.exameFisico || '—' }}</dd>
+          <dt>Avaliação</dt>
+          <dd>{{ e.avaliacao || '—' }}</dd>
+          <dt>Conduta</dt>
+          <dd>{{ e.conduta || '—' }}</dd>
+          @if (e.motivoRetificacao) {
+            <dt>Motivo da retificação</dt>
+            <dd>{{ e.motivoRetificacao }}</dd>
+          }
+        </dl>
+        <p class="assinatura">
+          Assinada por {{ e.autoraNome }} · CRM {{ e.crm }}/{{ e.crmUf }} em
+          {{ formatarDataHora(e.assinadaEm) }}
+        </p>
+        <div class="acoes">
+          @if (versoesAnteriores(e).length > 0) {
+            <p-button
+              [label]="
+                historico() === e.raizId ? 'Ocultar versões anteriores' : 'Ver versões anteriores'
+              "
+              icon="pi pi-history"
+              severity="secondary"
+              [text]="true"
+              (onClick)="historico.set(historico() === e.raizId ? null : e.raizId)"
+            />
+          }
+          @if (podeRetificar(e)) {
+            <p-button
+              label="Retificar"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="retificar(e)"
+            />
+          }
+        </div>
+
+        @if (historico() === e.raizId) {
+          @for (v of versoesAnteriores(e); track v.id) {
+            <div class="versao">
+              <p class="dica">
+                Versão assinada em {{ formatarDataHora(v.assinadaEm) }} · substituída
+              </p>
+              <p>
+                PA {{ pa(v) }} · Peso {{ numero(v.pesoKg) }} · AU {{ numero(v.alturaUterinaCm) }} ·
+                BCF {{ v.bcfBpm ?? '—' }}
+              </p>
+              @if (v.conduta) {
+                <p>Conduta: {{ v.conduta }}</p>
+              }
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+</section>
+
+<p-dialog
+  [header]="emRetificacao() ? 'Retificar evolução' : 'Evolução'"
+  [visible]="editando() !== null"
+  (visibleChange)="fecharEditor()"
+  [modal]="true"
+  [focusOnShow]="false"
+  [style]="{ width: '48rem' }"
+>
+  <form class="formulario" [formGroup]="form">
+    <div class="grade">
+      @if (!emRetificacao()) {
+        <div class="campo largo">
+          <label for="consulta">Consulta</label>
+          <p-select
+            [fluid]="true"
+            inputId="consulta"
+            formControlName="consultaId"
+            [options]="consultasDisponiveis()"
+            optionLabel="rotulo"
+            optionValue="valor"
+            [showClear]="true"
+            placeholder="Sem consulta (intercorrência ou puerpério)"
+            (onChange)="escolherConsulta($event.value)"
+          />
+        </div>
+      }
+      <div class="campo">
+        <label for="atendidaEm">Atendimento</label>
+        <p-datepicker
+          [fluid]="true"
+          inputId="atendidaEm"
+          formControlName="atendidaEm"
+          dateFormat="dd/mm/yy"
+          [showTime]="true"
+          [showIcon]="true"
+        />
+      </div>
+    </div>
+
+    <div class="grade">
+      <div class="campo">
+        <label for="peso">Peso (kg)</label>
+        <p-inputnumber
+          [fluid]="true"
+          inputId="peso"
+          formControlName="pesoKg"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="2"
+          locale="pt-BR"
+        />
+      </div>
+      <div class="campo">
+        <label for="pas">PA sistólica</label>
+        <p-inputnumber
+          [fluid]="true"
+          inputId="pas"
+          formControlName="paSistolica"
+          [useGrouping]="false"
+        />
+      </div>
+      <div class="campo">
+        <label for="pad">PA diastólica</label>
+        <p-inputnumber
+          [fluid]="true"
+          inputId="pad"
+          formControlName="paDiastolica"
+          [useGrouping]="false"
+        />
+      </div>
+      <div class="campo">
+        <label for="au">Altura uterina (cm)</label>
+        <p-inputnumber
+          [fluid]="true"
+          inputId="au"
+          formControlName="alturaUterinaCm"
+          [maxFractionDigits]="1"
+          locale="pt-BR"
+        />
+      </div>
+      <div class="campo">
+        <label for="bcf">BCF (bpm)</label>
+        <p-inputnumber
+          [fluid]="true"
+          inputId="bcf"
+          formControlName="bcfBpm"
+          [useGrouping]="false"
+        />
+      </div>
+      <div class="campo">
+        <label for="movimentacao">Movimentação fetal</label>
+        <p-select
+          [fluid]="true"
+          inputId="movimentacao"
+          formControlName="movimentacaoFetal"
+          [options]="movimentacaoOpcoes"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+        />
+      </div>
+      <div class="campo">
+        <label for="edema">Edema</label>
+        <p-select
+          [fluid]="true"
+          inputId="edema"
+          formControlName="edema"
+          [options]="edemaOpcoes"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+        />
+      </div>
+      <div class="campo">
+        <label for="apresentacao">Apresentação</label>
+        <p-select
+          [fluid]="true"
+          inputId="apresentacao"
+          formControlName="apresentacao"
+          [options]="apresentacaoOpcoes"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+        />
+      </div>
+    </div>
+
+    <label for="queixa">Queixa</label>
+    <textarea id="queixa" pTextarea rows="2" formControlName="queixa"></textarea>
+    <label for="exameFisico">Exame físico</label>
+    <textarea id="exameFisico" pTextarea rows="2" formControlName="exameFisico"></textarea>
+    <label for="avaliacao">Avaliação</label>
+    <textarea id="avaliacao" pTextarea rows="2" formControlName="avaliacao"></textarea>
+    <label for="conduta">Conduta</label>
+    <textarea id="conduta" pTextarea rows="2" formControlName="conduta"></textarea>
+  </form>
+
+  @if (estado() === 'conflito') {
+    <div class="conflito">
+      <p-message
+        severity="warn"
+        text="Este rascunho foi alterado em outro aparelho. Escolha qual versão manter."
+      />
+      <div class="acoes">
+        <p-button
+          label="Recarregar versão salva"
+          severity="secondary"
+          (onClick)="recarregarVersaoSalva()"
+        />
+        <p-button label="Manter esta tela" (onClick)="manterEstaTela()" />
+      </div>
+    </div>
+  }
+  @if (erroEditor()) {
+    <p-message severity="error" [text]="erroEditor()!" />
+  }
+
+  <ng-template #footer>
+    <span class="situacao">
+      @switch (estado()) {
+        @case ('salvando') {
+          Salvando…
+        }
+        @case ('salvo') {
+          @if (salvoEm()) {
+            Salvo às {{ salvoEm() }}
+          } @else {
+            Rascunho salvo
+          }
+        }
+        @case ('erro') {
+          Não salvo
+        }
+      }
+    </span>
+    <p-button label="Fechar" severity="secondary" (onClick)="fecharEditor()" />
+    <p-button
+      label="Assinar"
+      icon="pi pi-verified"
+      [disabled]="estado() === 'conflito' || estado() === 'salvando' || agindo()"
+      (onClick)="pedirAssinatura()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Assinar evolução"
+  [visible]="assinando()"
+  (visibleChange)="assinando.set(false)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <p>
+    Depois de assinada, a evolução não pode ser editada nem excluída. Para corrigir, será preciso
+    retificar.
+  </p>
+  <p class="quem">
+    PA {{ form.controls.paSistolica.value ?? '—' }}×{{ form.controls.paDiastolica.value ?? '—' }} ·
+    Peso {{ numero(form.controls.pesoKg.value) }} · AU
+    {{ numero(form.controls.alturaUterinaCm.value) }} · BCF {{ form.controls.bcfBpm.value ?? '—' }}
+  </p>
+  @if (emRetificacao()) {
+    <div class="formulario">
+      <label for="motivo">Motivo da retificação (mínimo de 10 caracteres)</label>
+      <textarea
+        id="motivo"
+        pTextarea
+        rows="2"
+        [ngModel]="motivo()"
+        (ngModelChange)="motivo.set($event)"
+      ></textarea>
+    </div>
+  }
+  @if (erroEditor()) {
+    <p-message severity="error" [text]="erroEditor()!" />
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="assinando.set(false)" />
+    <p-button
+      label="Assinar"
+      [disabled]="emRetificacao() && motivo().trim().length < 10"
+      [loading]="agindo()"
+      (onClick)="confirmarAssinatura()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Excluir rascunho"
+  [visible]="aExcluir() !== null"
+  (visibleChange)="aExcluir.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>Excluir este rascunho de evolução? Ele ainda não faz parte do prontuário.</p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aExcluir.set(null)" />
+    <p-button
+      label="Excluir"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarExclusao()"
+    />
+  </ng-template>
+</p-dialog>

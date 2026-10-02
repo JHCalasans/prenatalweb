@@ -11,7 +11,7 @@ import { AuditoriaService, RegistroAuditoria } from '../../../core/auditoria/aud
 import { formatarDataHora } from '../../../core/formato/data';
 import { normalizarBusca } from '../../../core/formato/texto';
 
-// As 29 ações que migrations e a Edge Function gerir-equipe gravam hoje; ação
+// As 34 ações que migrations e a Edge Function gerir-equipe gravam hoje; ação
 // nova sem rótulo cai na chave crua em vez de sumir da tabela.
 const ROTULO_ACAO: Record<string, string> = {
   'checklist.marcado': 'Item de checklist marcado',
@@ -27,9 +27,14 @@ const ROTULO_ACAO: Record<string, string> = {
   'documento.publicado': 'Documento publicado',
   'documento.rascunho_criado': 'Rascunho de documento criado',
   'documento.rascunho_excluido': 'Rascunho de documento excluído',
+  'evolucao.assinada': 'Evolução assinada',
+  'evolucao.rascunho_criado': 'Rascunho de evolução criado',
+  'evolucao.retificada': 'Evolução retificada',
   'gestacao.encerrada': 'Gestação encerrada',
   'paciente.atualizado': 'Paciente atualizada',
   'paciente.criado': 'Paciente cadastrada',
+  'profiles.crm_definido': 'CRM definido',
+  'prontuario.aberto': 'Prontuário aberto',
   'protocolo.item_aposentado': 'Item de protocolo aposentado',
   'protocolo.item_criado': 'Item de protocolo criado',
   'protocolo.item_editado': 'Item de protocolo editado',
@@ -83,6 +88,7 @@ export class AuditoriaLista implements OnInit {
     { rotulo: 'Checklist', valor: 'gestacao_checklist' as string | null },
     { rotulo: 'Consultas', valor: 'consultas' as string | null },
     { rotulo: 'Documentos', valor: 'documentos' as string | null },
+    { rotulo: 'Evoluções', valor: 'evolucoes' as string | null },
     { rotulo: 'Itens de protocolo', valor: 'protocolo_itens' as string | null },
     { rotulo: 'Equipe', valor: 'profiles' as string | null },
   ];

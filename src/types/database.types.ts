@@ -246,6 +246,144 @@ export type Database = {
           },
         ]
       }
+      evolucoes: {
+        Row: {
+          altura_uterina_cm: number | null
+          apresentacao: Database["public"]["Enums"]["apresentacao_fetal"] | null
+          assinada_em: string | null
+          atendida_em: string
+          atualizado_em: string
+          autora_id: string
+          avaliacao: string | null
+          bcf_bpm: number | null
+          conduta: string | null
+          consulta_id: string | null
+          conteudo_hash: string | null
+          created_at: string
+          crm: string | null
+          crm_uf: string | null
+          edema: Database["public"]["Enums"]["grau_edema"] | null
+          exame_fisico: string | null
+          gestacao_id: string
+          id: string
+          ig_dias: number | null
+          motivo_retificacao: string | null
+          movimentacao_fetal:
+            | Database["public"]["Enums"]["movimentacao_fetal"]
+            | null
+          pa_diastolica: number | null
+          pa_sistolica: number | null
+          papel_vinculo: Database["public"]["Enums"]["papel_vinculo"]
+          peso_kg: number | null
+          queixa: string | null
+          raiz_id: string
+          retifica_id: string | null
+          revisao: number
+          status: Database["public"]["Enums"]["status_evolucao"]
+        }
+        Insert: {
+          altura_uterina_cm?: number | null
+          apresentacao?:
+            | Database["public"]["Enums"]["apresentacao_fetal"]
+            | null
+          assinada_em?: string | null
+          atendida_em: string
+          atualizado_em?: string
+          autora_id: string
+          avaliacao?: string | null
+          bcf_bpm?: number | null
+          conduta?: string | null
+          consulta_id?: string | null
+          conteudo_hash?: string | null
+          created_at?: string
+          crm?: string | null
+          crm_uf?: string | null
+          edema?: Database["public"]["Enums"]["grau_edema"] | null
+          exame_fisico?: string | null
+          gestacao_id: string
+          id: string
+          ig_dias?: number | null
+          motivo_retificacao?: string | null
+          movimentacao_fetal?:
+            | Database["public"]["Enums"]["movimentacao_fetal"]
+            | null
+          pa_diastolica?: number | null
+          pa_sistolica?: number | null
+          papel_vinculo: Database["public"]["Enums"]["papel_vinculo"]
+          peso_kg?: number | null
+          queixa?: string | null
+          raiz_id: string
+          retifica_id?: string | null
+          revisao?: number
+          status?: Database["public"]["Enums"]["status_evolucao"]
+        }
+        Update: {
+          altura_uterina_cm?: number | null
+          apresentacao?:
+            | Database["public"]["Enums"]["apresentacao_fetal"]
+            | null
+          assinada_em?: string | null
+          atendida_em?: string
+          atualizado_em?: string
+          autora_id?: string
+          avaliacao?: string | null
+          bcf_bpm?: number | null
+          conduta?: string | null
+          consulta_id?: string | null
+          conteudo_hash?: string | null
+          created_at?: string
+          crm?: string | null
+          crm_uf?: string | null
+          edema?: Database["public"]["Enums"]["grau_edema"] | null
+          exame_fisico?: string | null
+          gestacao_id?: string
+          id?: string
+          ig_dias?: number | null
+          motivo_retificacao?: string | null
+          movimentacao_fetal?:
+            | Database["public"]["Enums"]["movimentacao_fetal"]
+            | null
+          pa_diastolica?: number | null
+          pa_sistolica?: number | null
+          papel_vinculo?: Database["public"]["Enums"]["papel_vinculo"]
+          peso_kg?: number | null
+          queixa?: string | null
+          raiz_id?: string
+          retifica_id?: string | null
+          revisao?: number
+          status?: Database["public"]["Enums"]["status_evolucao"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evolucoes_autora_id_fkey"
+            columns: ["autora_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evolucoes_consulta_id_fkey"
+            columns: ["consulta_id"]
+            isOneToOne: false
+            referencedRelation: "consultas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evolucoes_gestacao_id_fkey"
+            columns: ["gestacao_id"]
+            isOneToOne: false
+            referencedRelation: "gestacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evolucoes_retifica_id_fkey"
+            columns: ["retifica_id"]
+            isOneToOne: false
+            referencedRelation: "evolucoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gestacao_checklist: {
         Row: {
           data: string | null
@@ -379,6 +517,8 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          crm: string | null
+          crm_uf: string | null
           id: string
           nome: string
           papel: Database["public"]["Enums"]["papel_usuario"]
@@ -387,6 +527,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          crm?: string | null
+          crm_uf?: string | null
           id: string
           nome: string
           papel: Database["public"]["Enums"]["papel_usuario"]
@@ -395,6 +537,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          crm?: string | null
+          crm_uf?: string | null
           id?: string
           nome?: string
           papel?: Database["public"]["Enums"]["papel_usuario"]
@@ -573,6 +717,14 @@ export type Database = {
         Args: { p_item_id: string }
         Returns: undefined
       }
+      assinar_evolucao: {
+        Args: {
+          p_id: string
+          p_motivo_retificacao?: string
+          p_revisao_base: number
+        }
+        Returns: string
+      }
       atribuir_vinculo_pela_secretaria: {
         Args: {
           p_medica_id: string
@@ -580,6 +732,20 @@ export type Database = {
           p_papel: Database["public"]["Enums"]["papel_vinculo"]
         }
         Returns: string
+      }
+      atualizar_dum_pela_secretaria: {
+        Args: { p_dum: string; p_gestacao_id: string }
+        Returns: undefined
+      }
+      atualizar_gestacao: {
+        Args: {
+          p_dpp_origem: Database["public"]["Enums"]["dpp_origem"]
+          p_dpp_usg?: string
+          p_dum?: string
+          p_gestacao_id: string
+          p_tipo?: Database["public"]["Enums"]["tipo_gestacao"]
+        }
+        Returns: undefined
       }
       atualizar_paciente_pela_secretaria: {
         Args: {
@@ -673,6 +839,20 @@ export type Database = {
           storage_path: string
         }[]
       }
+      criar_gestacao: {
+        Args: {
+          p_dpp_origem: Database["public"]["Enums"]["dpp_origem"]
+          p_dpp_usg?: string
+          p_dum?: string
+          p_paciente_id: string
+          p_tipo?: Database["public"]["Enums"]["tipo_gestacao"]
+        }
+        Returns: string
+      }
+      criar_gestacao_pela_secretaria: {
+        Args: { p_dum: string; p_paciente_id: string }
+        Returns: string
+      }
       criar_paciente_com_convite: {
         Args: {
           p_contato_emergencia?: string
@@ -712,6 +892,10 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["papel_usuario"]
       }
+      definir_crm: {
+        Args: { p_crm?: string; p_crm_uf?: string; p_medica_id: string }
+        Returns: undefined
+      }
       emitir_convite_pela_secretaria: {
         Args: { p_paciente_id: string }
         Returns: string
@@ -733,16 +917,34 @@ export type Database = {
         }
         Returns: undefined
       }
+      evolucao_vigente: { Args: { p_raiz_id: string }; Returns: string }
       excluir_documento_rascunho: {
         Args: { p_documento_id: string }
         Returns: undefined
       }
+      excluir_rascunho_evolucao: { Args: { p_id: string }; Returns: undefined }
       gerar_codigo_convite: { Args: never; Returns: string }
+      gestacao_ativa_da_paciente: {
+        Args: { p_paciente_id: string }
+        Returns: {
+          dpp_final: string
+          dpp_origem: Database["public"]["Enums"]["dpp_origem"]
+          dpp_usg: string
+          dum: string
+          gestacao_id: string
+          tipo: Database["public"]["Enums"]["tipo_gestacao"]
+        }[]
+      }
       ig_semanas: { Args: { p_dpp_final: string }; Returns: number }
       inativar_vinculo_pela_secretaria: {
         Args: { p_vinculo_id: string }
         Returns: undefined
       }
+      iniciar_retificacao: {
+        Args: { p_evolucao_id: string; p_id: string }
+        Returns: undefined
+      }
+      is_admin: { Args: never; Returns: boolean }
       is_medica: { Args: never; Returns: boolean }
       is_secretaria: { Args: never; Returns: boolean }
       janela_checklist: {
@@ -787,6 +989,22 @@ export type Database = {
         Args: { p_paciente_id: string }
         Returns: boolean
       }
+      medidas_da_gestacao: {
+        Args: { p_gestacao_id: string }
+        Returns: {
+          altura_uterina_cm: number
+          apresentacao: Database["public"]["Enums"]["apresentacao_fetal"]
+          atendida_em: string
+          bcf_bpm: number
+          edema: Database["public"]["Enums"]["grau_edema"]
+          evolucao_id: string
+          ig_dias: number
+          movimentacao_fetal: Database["public"]["Enums"]["movimentacao_fetal"]
+          pa_diastolica: number
+          pa_sistolica: number
+          peso_kg: number
+        }[]
+      }
       paciente_dona_da_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: boolean
@@ -827,6 +1045,10 @@ export type Database = {
           urgencia_score: number
         }[]
       }
+      promover_para_admin: {
+        Args: { p_nome?: string; p_user_id: string }
+        Returns: undefined
+      }
       promover_para_medica: {
         Args: { p_nome?: string; p_user_id: string }
         Returns: undefined
@@ -834,6 +1056,42 @@ export type Database = {
       promover_para_secretaria: {
         Args: { p_nome?: string; p_user_id: string }
         Returns: undefined
+      }
+      prontuario_da_paciente: {
+        Args: { p_paciente_id: string }
+        Returns: {
+          altura_uterina_cm: number
+          apresentacao: Database["public"]["Enums"]["apresentacao_fetal"]
+          assinada_em: string
+          atendida_em: string
+          atualizado_em: string
+          autora_id: string
+          autora_nome: string
+          avaliacao: string
+          bcf_bpm: number
+          conduta: string
+          consulta_id: string
+          crm: string
+          crm_uf: string
+          edema: Database["public"]["Enums"]["grau_edema"]
+          exame_fisico: string
+          gestacao_id: string
+          id: string
+          ig_dias: number
+          motivo_retificacao: string
+          movimentacao_fetal: Database["public"]["Enums"]["movimentacao_fetal"]
+          pa_diastolica: number
+          pa_sistolica: number
+          papel_vinculo: Database["public"]["Enums"]["papel_vinculo"]
+          peso_kg: number
+          queixa: string
+          raiz_id: string
+          retifica_id: string
+          retificada: boolean
+          revisao: number
+          status: Database["public"]["Enums"]["status_evolucao"]
+          vigente: boolean
+        }[]
       }
       protocolo_da_clinica: {
         Args: { p_incluir_aposentados?: boolean }
@@ -934,6 +1192,28 @@ export type Database = {
         Args: { p_paciente_id: string }
         Returns: number
       }
+      salvar_rascunho_evolucao: {
+        Args: {
+          p_altura_uterina_cm?: number
+          p_apresentacao?: Database["public"]["Enums"]["apresentacao_fetal"]
+          p_atendida_em: string
+          p_avaliacao?: string
+          p_bcf_bpm?: number
+          p_conduta?: string
+          p_consulta_id?: string
+          p_edema?: Database["public"]["Enums"]["grau_edema"]
+          p_exame_fisico?: string
+          p_gestacao_id: string
+          p_id: string
+          p_movimentacao_fetal?: Database["public"]["Enums"]["movimentacao_fetal"]
+          p_pa_diastolica?: number
+          p_pa_sistolica?: number
+          p_peso_kg?: number
+          p_queixa?: string
+          p_revisao_base: number
+        }
+        Returns: number
+      }
       transferir_vinculo_pela_secretaria: {
         Args: { p_nova_medica_id: string; p_vinculo_id: string }
         Returns: string
@@ -949,6 +1229,24 @@ export type Database = {
         }
         Returns: number
       }
+      validar_dados_gestacao: {
+        Args: {
+          p_dpp_origem: Database["public"]["Enums"]["dpp_origem"]
+          p_dpp_usg: string
+          p_dum: string
+        }
+        Returns: undefined
+      }
+      validar_medidas_evolucao: {
+        Args: {
+          p_altura_uterina_cm: number
+          p_bcf_bpm: number
+          p_pa_diastolica: number
+          p_pa_sistolica: number
+          p_peso_kg: number
+        }
+        Returns: undefined
+      }
       vinculos_da_paciente: {
         Args: { p_paciente_id: string }
         Returns: {
@@ -962,6 +1260,7 @@ export type Database = {
       }
     }
     Enums: {
+      apresentacao_fetal: "cefalica" | "pelvica" | "transversa" | "indefinida"
       desfecho_gestacao:
         | "parto_normal"
         | "cesarea"
@@ -970,7 +1269,14 @@ export type Database = {
         | "transferencia_cuidado"
         | "outro"
       dpp_origem: "dum" | "usg"
-      papel_usuario: "paciente" | "medica" | "secretaria"
+      grau_edema:
+        | "ausente"
+        | "uma_cruz"
+        | "duas_cruzes"
+        | "tres_cruzes"
+        | "quatro_cruzes"
+      movimentacao_fetal: "presente" | "diminuida" | "ausente"
+      papel_usuario: "paciente" | "medica" | "secretaria" | "admin"
       papel_vinculo: "obstetra" | "medicina_fetal"
       status_checklist:
         | "pendente"
@@ -978,6 +1284,7 @@ export type Database = {
         | "realizado"
         | "nao_aplicavel"
       status_consulta: "agendada" | "realizada" | "cancelada" | "faltou"
+      status_evolucao: "rascunho" | "assinada"
       status_gestacao: "ativa" | "encerrada"
       tipo_documento:
         | "laudo_usg"
@@ -1116,6 +1423,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      apresentacao_fetal: ["cefalica", "pelvica", "transversa", "indefinida"],
       desfecho_gestacao: [
         "parto_normal",
         "cesarea",
@@ -1125,7 +1433,15 @@ export const Constants = {
         "outro",
       ],
       dpp_origem: ["dum", "usg"],
-      papel_usuario: ["paciente", "medica", "secretaria"],
+      grau_edema: [
+        "ausente",
+        "uma_cruz",
+        "duas_cruzes",
+        "tres_cruzes",
+        "quatro_cruzes",
+      ],
+      movimentacao_fetal: ["presente", "diminuida", "ausente"],
+      papel_usuario: ["paciente", "medica", "secretaria", "admin"],
       papel_vinculo: ["obstetra", "medicina_fetal"],
       status_checklist: [
         "pendente",
@@ -1134,6 +1450,7 @@ export const Constants = {
         "nao_aplicavel",
       ],
       status_consulta: ["agendada", "realizada", "cancelada", "faltou"],
+      status_evolucao: ["rascunho", "assinada"],
       status_gestacao: ["ativa", "encerrada"],
       tipo_documento: [
         "laudo_usg",

@@ -6,13 +6,23 @@
       </p>
       <h1>{{ paciente()?.nome || 'Carregando…' }}</h1>
     </div>
-    <p-button
-      label="Atualizar"
-      icon="pi pi-refresh"
-      severity="secondary"
-      [loading]="carregando()"
-      (onClick)="carregar()"
-    />
+    <div class="acoes">
+      <p-button
+        label="Reemitir convite"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [text]="true"
+        [disabled]="agindo()"
+        (onClick)="aReemitir.set(true)"
+      />
+      <p-button
+        label="Atualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="carregando()"
+        (onClick)="carregar()"
+      />
+    </div>
   </header>
 
   @if (erro()) {
@@ -53,38 +63,11 @@
       </section>
     </div>
 
-    <section class="bloco">
-      <h2>Gestações</h2>
-      @if (gestacoes().length === 0) {
-        <p class="vazio">Nenhuma gestação cadastrada.</p>
-      } @else {
-        <p-table [value]="gestacoes()" dataKey="id">
-          <ng-template #header>
-            <tr>
-              <th>DPP</th>
-              <th>Origem</th>
-              <th>Tipo</th>
-              <th>Situação</th>
-              <th>Desfecho</th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-g>
-            <tr>
-              <td>{{ formatarData(g.dppFinal) }}</td>
-              <td>{{ g.dppOrigem === 'dum' ? 'DUM' : 'USG' }}</td>
-              <td>{{ g.tipo === 'unica' ? 'Única' : 'Gemelar' }}</td>
-              <td>
-                <p-tag
-                  [value]="g.status === 'ativa' ? 'Ativa' : 'Encerrada'"
-                  [severity]="g.status === 'ativa' ? 'success' : 'secondary'"
-                />
-              </td>
-              <td>{{ g.desfecho || '—' }}</td>
-            </tr>
-          </ng-template>
-        </p-table>
-      }
-    </section>
+    <app-cartao-gestacoes
+      [pacienteId]="pacienteId"
+      [gestacoes]="gestacoes()"
+      (alterada)="carregar()"
+    />
 
     @if (gestacaoAtual()) {
       <section class="bloco">
@@ -99,6 +82,7 @@
                 <th>Tipo</th>
                 <th>Local</th>
                 <th>Situação</th>
+                <th></th>
               </tr>
             </ng-template>
             <ng-template #body let-c>
@@ -107,11 +91,31 @@
                 <td>{{ c.tipo }}</td>
                 <td>{{ c.local || '—' }}</td>
                 <td>{{ c.status }}</td>
+                <td class="acoes">
+                  @if (c.status === 'agendada') {
+                    <p-button
+                      label="Registrar"
+                      icon="pi pi-check"
+                      severity="secondary"
+                      [text]="true"
+                      [disabled]="!consultaVencida(c) || agindo()"
+                      (onClick)="abrirRegistro(c)"
+                    />
+                  }
+                </td>
               </tr>
             </ng-template>
           </p-table>
         }
       </section>
+
+      <app-cartao-prontuario
+        [pacienteId]="pacienteId"
+        [gestacaoId]="gestacaoAtual()!.id"
+        [gestacaoAtiva]="gestacaoAtiva()"
+        [consultas]="consultas()"
+        (alterado)="carregar()"
+      />
 
       <section class="bloco">
         <h2>Checklist do protocolo</h2>
@@ -189,7 +193,13 @@
     />
 
     <label for="data">Data (opcional)</label>
-    <p-datepicker inputId="data" formControlName="data" dateFormat="dd/mm/yy" [showIcon]="true" />
+    <p-datepicker
+      inputId="data"
+      formControlName="data"
+      dateFormat="dd/mm/yy"
+      [showIcon]="true"
+      [appendTo]="'body'"
+    />
 
     <label for="obs">Observação (opcional)</label>
     <input id="obs" type="text" pInputText formControlName="observacao" />
@@ -200,3 +210,55 @@
     <p-button label="Salvar" [loading]="agindo()" (onClick)="confirmarMarcacao()" />
   </ng-template>
 </p-dialog>
+
+<p-dialog
+  header="Registrar consulta"
+  [visible]="aRegistrar() !== null"
+  (visibleChange)="aRegistrar.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p class="quem">
+    {{ formatarDataHora(aRegistrar()?.dataHora ?? '') }} · {{ aRegistrar()?.tipo }}
+  </p>
+  <p class="dica">
+    A consulta já passou. Registrar como realizada, falta ou cancelada atualiza o painel e o
+    checklist.
+  </p>
+
+  <form class="formulario" [formGroup]="registro" (ngSubmit)="confirmarRegistro()">
+    <label for="registro-status">Como ficou</label>
+    <p-select
+      inputId="registro-status"
+      formControlName="status"
+      [options]="registroOpcoes"
+      optionLabel="rotulo"
+      optionValue="valor"
+    />
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aRegistrar.set(null)" />
+    <p-button label="Registrar" [loading]="agindo()" (onClick)="confirmarRegistro()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Reemitir convite"
+  [visible]="aReemitir()"
+  (visibleChange)="aReemitir.set($event)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    Um código novo será gerado para esta paciente e <strong>o anterior para de valer</strong> — se
+    ela ainda não ativou o antigo, vai precisar do novo.
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aReemitir.set(false)" />
+    <p-button label="Reemitir" [loading]="agindo()" (onClick)="confirmarReemissao()" />
+  </ng-template>
+</p-dialog>
+
+<app-codigo-convite [codigo]="codigoConvite()" (fechado)="fecharCodigoConvite()" />

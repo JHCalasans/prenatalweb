@@ -5,6 +5,7 @@ import { EquipeService } from './equipe.service';
 
 function clienteFalso(resposta: { data?: unknown; error?: unknown }) {
   return {
+    rpc: vi.fn().mockResolvedValue({ data: null, error: resposta.error ?? null }),
     functions: {
       invoke: vi
         .fn()
@@ -38,7 +39,62 @@ describe('EquipeService', () => {
     expect(cliente.functions.invoke).toHaveBeenCalledWith('gerir-equipe', {
       body: { acao: 'listar' },
     });
-    expect(resultado).toEqual({ ok: true, valor: [membro] });
+    expect(resultado).toEqual({ ok: true, valor: [{ ...membro, crm: null, crmUf: null }] });
+  });
+
+  it('traz o CRM da função para camelCase', async () => {
+    const cliente = clienteFalso({
+      data: {
+        membros: [
+          {
+            id: 'u1',
+            nome: 'Dra A',
+            papel: 'medica',
+            telefone: null,
+            email: null,
+            ativo: true,
+            crm: '123456',
+            crm_uf: 'SP',
+          },
+        ],
+      },
+    });
+    const service = criar(cliente);
+
+    const resultado = await service.listar();
+
+    expect(resultado.ok && resultado.valor[0]).toMatchObject({ crm: '123456', crmUf: 'SP' });
+    expect(resultado.ok && 'crm_uf' in resultado.valor[0]!).toBe(false);
+  });
+
+  it('define o CRM pela RPC e omite os nulos para limpar', async () => {
+    const cliente = clienteFalso({});
+    const service = criar(cliente);
+
+    await service.definirCrm('u1', '123456', 'SP');
+    await service.definirCrm('u1', null, null);
+
+    expect(cliente.rpc).toHaveBeenNthCalledWith(1, 'definir_crm', {
+      p_medica_id: 'u1',
+      p_crm: '123456',
+      p_crm_uf: 'SP',
+    });
+    expect(cliente.rpc).toHaveBeenNthCalledWith(2, 'definir_crm', {
+      p_medica_id: 'u1',
+      p_crm: undefined,
+      p_crm_uf: undefined,
+    });
+  });
+
+  it('repassa a mensagem da RPC de CRM (P0001)', async () => {
+    const cliente = clienteFalso({
+      error: { code: 'P0001', message: 'UF do CRM inválida' },
+    });
+    const service = criar(cliente);
+
+    const resultado = await service.definirCrm('u1', '1', 'XX');
+
+    expect(resultado).toEqual({ ok: false, mensagem: 'UF do CRM inválida' });
   });
 
   it('devolve a senha provisória na criação', async () => {

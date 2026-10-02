@@ -22,6 +22,7 @@
         <th>Nome</th>
         <th>E-mail</th>
         <th>Papel</th>
+        <th>CRM</th>
         <th>Situação</th>
         <th></th>
       </tr>
@@ -42,6 +43,7 @@
             (onChange)="alterarPapel(membro, $event.value)"
           />
         </td>
+        <td>{{ crmRotulo(membro) }}</td>
         <td>
           <p-tag
             [value]="membro.ativo ? 'Ativa' : 'Desativada'"
@@ -49,6 +51,16 @@
           />
         </td>
         <td class="acoes">
+          @if (membro.papel === 'medica') {
+            <p-button
+              label="Definir CRM"
+              icon="pi pi-id-card"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="abrirCrm(membro)"
+            />
+          }
           <p-button
             label="Redefinir senha"
             icon="pi pi-key"
@@ -82,7 +94,7 @@
 
     <ng-template #emptymessage>
       <tr>
-        <td colspan="5" class="vazio">Nenhuma conta de equipe.</td>
+        <td colspan="6" class="vazio">Nenhuma conta de equipe.</td>
       </tr>
     </ng-template>
   </p-table>
@@ -109,6 +121,7 @@
       [options]="papeis"
       optionLabel="rotulo"
       optionValue="valor"
+      appendTo="body"
     />
   </form>
 
@@ -166,6 +179,43 @@
       severity="danger"
       [loading]="agindo()"
       (onClick)="confirmarDesativacao()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Definir CRM"
+  [visible]="aDefinirCrm() !== null"
+  (visibleChange)="aDefinirCrm.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p class="quem">{{ aDefinirCrm()?.nome }}</p>
+  <p>Sem CRM, a médica não consegue assinar evoluções. Deixe os dois campos vazios para limpar.</p>
+  <form class="formulario" [formGroup]="formularioCrm" (ngSubmit)="salvarCrm()">
+    <label for="crm">Número</label>
+    <input id="crm" type="text" inputmode="numeric" pInputText formControlName="crm" />
+
+    <label for="crmUf">UF</label>
+    <p-select
+      inputId="crmUf"
+      formControlName="crmUf"
+      [options]="ufs"
+      optionLabel="rotulo"
+      optionValue="valor"
+      [showClear]="true"
+      [filter]="true"
+      appendTo="body"
+    />
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aDefinirCrm.set(null)" />
+    <p-button
+      label="Salvar"
+      [disabled]="formularioCrm.invalid || agindo()"
+      [loading]="agindo()"
+      (onClick)="salvarCrm()"
     />
   </ng-template>
 </p-dialog>
