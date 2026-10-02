@@ -256,6 +256,115 @@ describe('CartaoService', () => {
     });
   });
 
+  it('cria a gestação pela RPC e omite a data da origem contrária', async () => {
+    const cliente = clienteFalso({ data: 'g9' });
+    const service = criar(cliente);
+
+    const resultado = await service.criarGestacao('p1', {
+      dppOrigem: 'dum',
+      tipo: 'unica',
+      dum: '2026-03-01',
+      dppUsg: null,
+    });
+
+    expect(resultado).toEqual({ ok: true, valor: 'g9' });
+    expect(cliente.rpc).toHaveBeenCalledWith('criar_gestacao', {
+      p_paciente_id: 'p1',
+      p_dpp_origem: 'dum',
+      p_dum: '2026-03-01',
+      p_dpp_usg: undefined,
+      p_tipo: 'unica',
+    });
+  });
+
+  it('corrige a gestação pela RPC com a DPP do ultrassom', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente);
+
+    const resultado = await service.atualizarGestacao('g1', {
+      dppOrigem: 'usg',
+      tipo: 'gemelar',
+      dum: null,
+      dppUsg: '2026-12-01',
+    });
+
+    expect(resultado).toEqual({ ok: true, valor: null });
+    expect(cliente.rpc).toHaveBeenCalledWith('atualizar_gestacao', {
+      p_gestacao_id: 'g1',
+      p_dpp_origem: 'usg',
+      p_dum: undefined,
+      p_dpp_usg: '2026-12-01',
+      p_tipo: 'gemelar',
+    });
+  });
+
+  it('encerra a gestação com desfecho e omite a observação nula', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente);
+
+    const resultado = await service.encerrarGestacao('g1', 'parto_normal', null);
+
+    expect(resultado).toEqual({ ok: true, valor: null });
+    expect(cliente.rpc).toHaveBeenCalledWith('encerrar_gestacao', {
+      p_gestacao_id: 'g1',
+      p_desfecho: 'parto_normal',
+      p_observacao: undefined,
+    });
+  });
+
+  it('registra a consulta realizada pela RPC da agenda', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente);
+
+    const resultado = await service.registrarConsulta('c1', 'realizada');
+
+    expect(resultado).toEqual({ ok: true, valor: null });
+    expect(cliente.rpc).toHaveBeenCalledWith('marcar_consulta', {
+      p_consulta_id: 'c1',
+      p_status: 'realizada',
+    });
+  });
+
+  it('traz dum e dpp_usg das gestações para o formulário de edição', async () => {
+    const cliente = clienteFalso({
+      data: [
+        {
+          id: 'g1',
+          dpp_final: '2026-12-01',
+          dpp_origem: 'dum',
+          tipo: 'unica',
+          status: 'ativa',
+          desfecho: null,
+          desfecho_observacao: null,
+          dum: '2026-03-01',
+          dpp_usg: null,
+          created_at: '2026-05-01T12:00:00Z',
+        },
+      ],
+    });
+    const service = criar(cliente);
+
+    const resultado = await service.gestacoes('p1');
+
+    expect(resultado).toEqual({
+      ok: true,
+      valor: [
+        {
+          id: 'g1',
+          dppFinal: '2026-12-01',
+          dppOrigem: 'dum',
+          tipo: 'unica',
+          status: 'ativa',
+          desfecho: null,
+          desfechoObservacao: null,
+          dum: '2026-03-01',
+          dppUsg: null,
+          createdAt: '2026-05-01T12:00:00Z',
+        },
+      ],
+    });
+  });
+
   it('registrar leitura engola o erro da auditoria', async () => {
     const cliente = clienteFalso({ data: null });
     cliente.rpc.mockRejectedValueOnce(new Error('rede caiu'));

@@ -1,0 +1,23 @@
+<p-dialog
+  header="Código do convite"
+  [visible]="codigo() !== null"
+  (visibleChange)="!$event && fechado.emit()"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p class="aviso">
+    Este código aparece <strong>uma única vez</strong>. O banco guarda só o hash: se perder, será
+    preciso reemitir.
+  </p>
+
+  <p class="codigo">{{ codigo() }}</p>
+
+  @if (copiado()) {
+    <p-message severity="success" text="Copiado para a área de transferência." />
+  }
+
+  <ng-template #footer>
+    <p-button label="Copiar" icon="pi pi-copy" severity="secondary" (onClick)="copiar()" />
+    <p-button label="Já anotei" (onClick)="fechado.emit()" />
+  </ng-template>
+</p-dialog>

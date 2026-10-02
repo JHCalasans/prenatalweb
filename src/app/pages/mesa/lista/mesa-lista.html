@@ -4,13 +4,16 @@
       <p class="eyebrow">Clínica</p>
       <h1>Minhas pacientes</h1>
     </div>
-    <p-button
-      label="Atualizar"
-      icon="pi pi-refresh"
-      severity="secondary"
-      [loading]="carregando()"
-      (onClick)="carregar()"
-    />
+    <div class="acoes">
+      <p-button label="Nova paciente" icon="pi pi-plus" routerLink="/mesa/nova" />
+      <p-button
+        label="Atualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [loading]="carregando()"
+        (onClick)="carregar()"
+      />
+    </div>
   </header>
 
   <p class="dica">Ordenadas por urgência: achado alterado parado vem sempre primeiro.</p>
@@ -56,6 +59,7 @@
       <tr>
         <th>Paciente</th>
         <th>IG</th>
+        <th>DPP</th>
         <th>Próxima consulta</th>
         <th>Pendências</th>
         <th>Acesso</th>
@@ -71,6 +75,13 @@
             {{ p.ig_semanas }} sem · {{ p.trimestre }}º tri
           } @else {
             <span class="apagado">Sem gestação ativa</span>
+          }
+        </td>
+        <td>
+          @if (p.dpp_final) {
+            {{ formatarData(p.dpp_final) }}
+          } @else {
+            <span class="apagado">—</span>
           }
         </td>
         <td>{{ formatarDataHora(p.proxima_consulta_em) || '—' }}</td>
@@ -111,7 +122,7 @@
 
     <ng-template #emptymessage>
       <tr>
-        <td colspan="6" class="vazio">Nenhuma paciente encontrada.</td>
+        <td colspan="7" class="vazio">Nenhuma paciente encontrada.</td>
       </tr>
     </ng-template>
   </p-table>

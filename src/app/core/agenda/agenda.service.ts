@@ -91,6 +91,19 @@ export class AgendaService {
     return { ok: true, valor: null };
   }
 
+  // A RPC recusa a secretaria e devolve 'agendada'; o gate de tela é só de
+  // conveniência. É o mesmo marcar_consulta que o app Flutter usa.
+  async registrarRealizada(consultaId: string): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('marcar_consulta', {
+      p_consulta_id: consultaId,
+      p_status: 'realizada',
+    });
+    if (error) {
+      return { ok: false, mensagem: this.erros.mensagem(error) };
+    }
+    return { ok: true, valor: null };
+  }
+
   // A paciente do agendamento precisa de gestação ativa: a secretaria parte
   // do cadastro da clínica; a médica, do próprio painel.
   async pacientesAgendaveis(busca: string): Promise<Resultado<PacienteAgendavel[]>> {

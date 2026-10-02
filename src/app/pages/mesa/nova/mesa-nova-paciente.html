@@ -1,0 +1,65 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow"><a routerLink="/mesa">Minhas pacientes</a></p>
+      <h1>Nova paciente</h1>
+    </div>
+  </header>
+
+  <section class="bloco">
+    <p class="dica">
+      A paciente nasce vinculada a você e recebe um convite para entrar no aplicativo.
+    </p>
+
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="salvar()">
+      <label for="nome">Nome completo</label>
+      <input id="nome" type="text" pInputText formControlName="nome" autocomplete="off" />
+
+      <label for="papel">Tipo de vínculo</label>
+      <p-select
+        inputId="papel"
+        formControlName="papelVinculo"
+        [options]="papeisVinculo"
+        optionLabel="rotulo"
+        optionValue="valor"
+      />
+
+      <label for="nascimento">Data de nascimento (opcional)</label>
+      <p-datepicker
+        inputId="nascimento"
+        formControlName="dataNascimento"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [maxDate]="hoje"
+      />
+
+      <label for="cpf">CPF (opcional)</label>
+      <p-inputmask
+        inputId="cpf"
+        formControlName="cpf"
+        mask="999.999.999-99"
+        [unmask]="true"
+        placeholder="000.000.000-00"
+      />
+
+      <label for="contato">Contato de emergência (opcional)</label>
+      <input id="contato" type="text" pInputText formControlName="contatoEmergencia" />
+
+      @if (erro()) {
+        <p-message severity="error" [text]="erro()!" />
+      }
+
+      <div class="acoes">
+        <p-button
+          type="submit"
+          label="Cadastrar"
+          [loading]="salvando()"
+          [disabled]="formulario.invalid || salvando()"
+        />
+        <p-button type="button" label="Cancelar" severity="secondary" routerLink="/mesa" />
+      </div>
+    </form>
+  </section>
+</section>
+
+<app-codigo-convite [codigo]="codigo()" (fechado)="irParaCartao()" />

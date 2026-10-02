@@ -7,7 +7,7 @@ import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { formatarDataHora } from '../../../core/formato/data';
+import { formatarData, formatarDataHora } from '../../../core/formato/data';
 import { normalizarBusca } from '../../../core/formato/texto';
 import { MesaService, PacienteMesa } from '../../../core/mesa/mesa.service';
 
@@ -64,6 +64,7 @@ export class MesaLista implements OnInit {
     pendencia: [null as Pendencia | null],
   });
 
+  protected readonly formatarData = formatarData;
   protected readonly formatarDataHora = formatarDataHora;
 
   // A ordem vem da RPC; filtrar preserva.

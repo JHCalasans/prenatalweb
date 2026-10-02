@@ -91,6 +91,19 @@ describe('AgendaService', () => {
     expect(cliente.rpc).toHaveBeenNthCalledWith(3, 'marcar_falta', { p_consulta_id: 'c2' });
   });
 
+  it('registra a consulta realizada pela RPC do app', async () => {
+    const cliente = clienteFalso({ data: null });
+    const service = criar(cliente, 'medica');
+
+    const resultado = await service.registrarRealizada('c3');
+
+    expect(resultado).toEqual({ ok: true, valor: null });
+    expect(cliente.rpc).toHaveBeenCalledWith('marcar_consulta', {
+      p_consulta_id: 'c3',
+      p_status: 'realizada',
+    });
+  });
+
   it('repassa a mensagem da RPC (P0001)', async () => {
     const cliente = clienteFalso({
       error: { code: 'P0001', message: 'Só consulta futura pode ser cancelada' },

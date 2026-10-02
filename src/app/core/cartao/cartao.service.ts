@@ -7,6 +7,10 @@ type LinhaChecklist = Database['public']['Functions']['checklist_da_gestacao']['
 type LinhaVinculo = Database['public']['Functions']['vinculos_da_paciente']['Returns'][number];
 type StatusChecklist = Database['public']['Enums']['status_checklist'];
 type TipoDocumento = Database['public']['Enums']['tipo_documento'];
+type DppOrigem = Database['public']['Enums']['dpp_origem'];
+type TipoGestacao = Database['public']['Enums']['tipo_gestacao'];
+type DesfechoGestacao = Database['public']['Enums']['desfecho_gestacao'];
+type StatusConsulta = Database['public']['Enums']['status_consulta'];
 
 // O gerador não sabe a nulabilidade das colunas de retorno de função.
 export type ItemChecklist = Omit<LinhaChecklist, 'data' | 'observacao'> & {
@@ -15,7 +19,14 @@ export type ItemChecklist = Omit<LinhaChecklist, 'data' | 'observacao'> & {
 };
 
 export type VinculoCartao = LinhaVinculo;
-export type { StatusChecklist, TipoDocumento };
+export type {
+  StatusChecklist,
+  TipoDocumento,
+  DppOrigem,
+  TipoGestacao,
+  DesfechoGestacao,
+  StatusConsulta,
+};
 
 // Limites do bucket `documentos`; validar aqui evita criar rascunho que o
 // upload vai recusar.
@@ -40,7 +51,18 @@ export interface GestacaoCartao {
   status: string;
   desfecho: string | null;
   desfechoObservacao: string | null;
+  dum: string | null;
+  dppUsg: string | null;
   createdAt: string;
+}
+
+// Dados que a médica envia ao criar ou corrigir a gestação; `dpp_final` fica
+// para o trigger e a IG para a view.
+export interface DadosGestacao {
+  dppOrigem: DppOrigem;
+  tipo: TipoGestacao;
+  dum: string | null;
+  dppUsg: string | null;
 }
 
 export interface ConsultaCartao {
@@ -137,7 +159,9 @@ export class CartaoService {
   async gestacoes(pacienteId: string): Promise<Resultado<GestacaoCartao[]>> {
     const { data, error } = await this.supabase
       .from('gestacoes')
-      .select('id, dpp_final, dpp_origem, tipo, status, desfecho, desfecho_observacao, created_at')
+      .select(
+        'id, dpp_final, dpp_origem, tipo, status, desfecho, desfecho_observacao, dum, dpp_usg, created_at',
+      )
       .eq('paciente_id', pacienteId)
       .order('created_at', { ascending: false });
     if (error) {
@@ -153,9 +177,66 @@ export class CartaoService {
         status: g.status,
         desfecho: g.desfecho,
         desfechoObservacao: g.desfecho_observacao,
+        dum: g.dum,
+        dppUsg: g.dpp_usg,
         createdAt: g.created_at,
       })),
     };
+  }
+
+  async criarGestacao(pacienteId: string, dados: DadosGestacao): Promise<Resultado<string>> {
+    const { data, error } = await this.supabase.rpc('criar_gestacao', {
+      p_paciente_id: pacienteId,
+      p_dpp_origem: dados.dppOrigem,
+      p_dum: opcional(dados.dum),
+      p_dpp_usg: opcional(dados.dppUsg),
+      p_tipo: dados.tipo,
+    });
+    if (error) {
+      return { ok: false, mensagem: this.erros.mensagem(error) };
+    }
+    return { ok: true, valor: data };
+  }
+
+  async atualizarGestacao(gestacaoId: string, dados: DadosGestacao): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('atualizar_gestacao', {
+      p_gestacao_id: gestacaoId,
+      p_dpp_origem: dados.dppOrigem,
+      p_dum: opcional(dados.dum),
+      p_dpp_usg: opcional(dados.dppUsg),
+      p_tipo: dados.tipo,
+    });
+    if (error) {
+      return { ok: false, mensagem: this.erros.mensagem(error) };
+    }
+    return { ok: true, valor: null };
+  }
+
+  async encerrarGestacao(
+    gestacaoId: string,
+    desfecho: DesfechoGestacao,
+    observacao: string | null,
+  ): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('encerrar_gestacao', {
+      p_gestacao_id: gestacaoId,
+      p_desfecho: desfecho,
+      p_observacao: opcional(observacao),
+    });
+    if (error) {
+      return { ok: false, mensagem: this.erros.mensagem(error) };
+    }
+    return { ok: true, valor: null };
+  }
+
+  async registrarConsulta(consultaId: string, status: StatusConsulta): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('marcar_consulta', {
+      p_consulta_id: consultaId,
+      p_status: status,
+    });
+    if (error) {
+      return { ok: false, mensagem: this.erros.mensagem(error) };
+    }
+    return { ok: true, valor: null };
   }
 
   async vinculos(pacienteId: string): Promise<Resultado<VinculoCartao[]>> {
