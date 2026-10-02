@@ -52,6 +52,14 @@ h1 {
   white-space: nowrap;
 }
 
+/* O select ocupa a largura da coluna (igual em todas as linhas) em vez de
+   encolher até o texto da opção escolhida. */
+.combo-exame {
+  display: flex;
+  width: 100%;
+  min-width: 13rem;
+}
+
 .vazio {
   padding: 1.5rem;
   text-align: center;

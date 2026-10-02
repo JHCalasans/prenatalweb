@@ -1,0 +1,120 @@
+.painel {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 55%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--aconchego-texto-primario);
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.vazio {
+  margin: 0;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.dica {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.exame {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(0 0 0 / 6%);
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .nome {
+    min-width: 8rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--aconchego-texto-secundario);
+  }
+
+  .alterado strong {
+    color: var(--p-red-600, #c0392b);
+  }
+}
+
+.acoes {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--aconchego-texto-secundario);
+  }
+
+  textarea {
+    width: 100%;
+  }
+}
+
+.quem {
+  margin: 0 0 0.75rem;
+  font-weight: 800;
+  color: var(--aconchego-texto-primario);
+}
+
+.caixa {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+
+  label {
+    margin: 0;
+    cursor: pointer;
+  }
+}

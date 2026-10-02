@@ -1,0 +1,12 @@
+@if (erro()) {
+  <p-message severity="error" [text]="erro()!" />
+}
+
+@if (!carregando() && !erro()) {
+  @if (gestacaoId(); as gestacao) {
+    <app-painel-exames [gestacaoId]="gestacao" [gestacaoAtiva]="true" [podeLiberar]="false" />
+    <app-painel-vacinas [gestacaoId]="gestacao" [gestacaoAtiva]="true" />
+  } @else {
+    <p class="dica">Cadastre a gestação para registrar exames e vacinas.</p>
+  }
+}

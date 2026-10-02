@@ -2,6 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { CartaoService, ItemChecklist } from '../../../core/cartao/cartao.service';
+import { ExamesService } from '../../../core/exames/exames.service';
 import { PacientesService } from '../../../core/pacientes/pacientes.service';
 import { CartaoGestante } from './cartao-gestante';
 
@@ -45,6 +46,14 @@ function montar(servico: Partial<CartaoService>) {
       provideZonelessChangeDetection(),
       provideRouter([]),
       { provide: CartaoService, useValue: servico },
+      {
+        provide: ExamesService,
+        useValue: {
+          catalogo: vi.fn().mockResolvedValue({ ok: true, valor: [] }),
+          exames: vi.fn().mockResolvedValue({ ok: true, valor: [] }),
+          vacinas: vi.fn().mockResolvedValue({ ok: true, valor: [] }),
+        },
+      },
       {
         provide: PacientesService,
         useValue: { reemitirConvite: vi.fn().mockResolvedValue({ ok: true, valor: 'NOVO-0001' }) },
@@ -223,7 +232,9 @@ describe('CartaoGestante', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Registrar');
+    // "Registrar resultado" (exames) é outro botão: aqui vale só o da consulta.
+    const botoes = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button'));
+    expect(botoes.some((b) => b.textContent?.trim() === 'Registrar')).toBe(false);
   });
 
   it('registra a consulta pelo diálogo e recarrega o cartão', async () => {

@@ -19,6 +19,9 @@ ler só a projeção de medidas da caderneta, por RPC.
 Amendado na W12 pelo [ADR 0007](0007-anamnese-pela-secretaria.md) — segunda exceção da secretaria:
 ela lê e grava a anamnese de qualquer paciente da clínica, por RPC e com leitura auditada; a
 classificação de risco, a evolução, os laudos e o checklist continuam fora do seu alcance.
+Amendado na W13 pelo [ADR 0008](0008-exames-e-vacinas-pela-secretaria.md) — terceira exceção da
+secretaria: ela registra e lê resultados de exame e vacinas de qualquer gestação ativa, por RPC e com
+leitura auditada; liberar o resultado para a gestante segue exclusivo da médica vinculada.
 
 ## Contexto
 

@@ -11,7 +11,7 @@ import { AuditoriaService, RegistroAuditoria } from '../../../core/auditoria/aud
 import { formatarDataHora } from '../../../core/formato/data';
 import { normalizarBusca } from '../../../core/formato/texto';
 
-// As 37 ações que migrations e a Edge Function gerir-equipe gravam hoje; ação
+// As 44 ações que migrations e a Edge Function gerir-equipe gravam hoje; ação
 // nova sem rótulo cai na chave crua em vez de sumir da tabela.
 const ROTULO_ACAO: Record<string, string> = {
   'anamnese.aberta': 'Anamnese aberta',
@@ -32,17 +32,24 @@ const ROTULO_ACAO: Record<string, string> = {
   'evolucao.assinada': 'Evolução assinada',
   'evolucao.rascunho_criado': 'Rascunho de evolução criado',
   'evolucao.retificada': 'Evolução retificada',
+  'exame.excluido': 'Resultado de exame excluído',
+  'exame.liberado': 'Exame liberado',
+  'exame.registrado': 'Resultado de exame registrado',
+  'exames.abertos': 'Exames consultados',
   'gestacao.encerrada': 'Gestação encerrada',
   'paciente.atualizado': 'Paciente atualizada',
   'paciente.criado': 'Paciente cadastrada',
   'profiles.crm_definido': 'CRM definido',
   'prontuario.aberto': 'Prontuário aberto',
+  'protocolo.exame_vinculado': 'Exame vinculado ao protocolo',
   'protocolo.item_aposentado': 'Item de protocolo aposentado',
   'protocolo.item_criado': 'Item de protocolo criado',
   'protocolo.item_editado': 'Item de protocolo editado',
   'protocolo.item_reativado': 'Item de protocolo reativado',
   'protocolo.reordenado': 'Protocolo reordenado',
   'risco.classificado': 'Risco gestacional classificado',
+  'vacina.excluida': 'Registro de vacina excluído',
+  'vacina.registrada': 'Vacina registrada',
   'vinculo.atribuido': 'Vínculo atribuído',
   'vinculo.inativado': 'Vínculo encerrado',
   'vinculo.transferido': 'Vínculo transferido',
@@ -92,6 +99,8 @@ export class AuditoriaLista implements OnInit {
     { rotulo: 'Consultas', valor: 'consultas' as string | null },
     { rotulo: 'Documentos', valor: 'documentos' as string | null },
     { rotulo: 'Evoluções', valor: 'evolucoes' as string | null },
+    { rotulo: 'Exames', valor: 'exames' as string | null },
+    { rotulo: 'Vacinas', valor: 'vacinas_gestacao' as string | null },
     { rotulo: 'Itens de protocolo', valor: 'protocolo_itens' as string | null },
     { rotulo: 'Equipe', valor: 'profiles' as string | null },
   ];

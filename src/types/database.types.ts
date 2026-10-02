@@ -177,6 +177,59 @@ export type Database = {
           },
         ]
       }
+      componentes_exame: {
+        Row: {
+          codigo: string
+          natureza: Database["public"]["Enums"]["natureza_componente"]
+          nome: string
+          obrigatorio: boolean
+          ordem: number
+          positivo_alterado: boolean
+          ref_max: number | null
+          ref_min: number | null
+          rotulo_negativo: string | null
+          rotulo_positivo: string | null
+          tipo_exame: string
+          unidade: string | null
+        }
+        Insert: {
+          codigo: string
+          natureza: Database["public"]["Enums"]["natureza_componente"]
+          nome: string
+          obrigatorio?: boolean
+          ordem: number
+          positivo_alterado?: boolean
+          ref_max?: number | null
+          ref_min?: number | null
+          rotulo_negativo?: string | null
+          rotulo_positivo?: string | null
+          tipo_exame: string
+          unidade?: string | null
+        }
+        Update: {
+          codigo?: string
+          natureza?: Database["public"]["Enums"]["natureza_componente"]
+          nome?: string
+          obrigatorio?: boolean
+          ordem?: number
+          positivo_alterado?: boolean
+          ref_max?: number | null
+          ref_min?: number | null
+          rotulo_negativo?: string | null
+          rotulo_positivo?: string | null
+          tipo_exame?: string
+          unidade?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "componentes_exame_tipo_exame_fkey"
+            columns: ["tipo_exame"]
+            isOneToOne: false
+            referencedRelation: "tipos_exame"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       consultas: {
         Row: {
           created_at: string
@@ -489,6 +542,141 @@ export type Database = {
           },
         ]
       }
+      exame_resultados: {
+        Row: {
+          alterado: boolean
+          componente: string
+          exame_id: string
+          valor_numerico: number | null
+          valor_qualitativo:
+            | Database["public"]["Enums"]["resultado_qualitativo"]
+            | null
+        }
+        Insert: {
+          alterado: boolean
+          componente: string
+          exame_id: string
+          valor_numerico?: number | null
+          valor_qualitativo?:
+            | Database["public"]["Enums"]["resultado_qualitativo"]
+            | null
+        }
+        Update: {
+          alterado?: boolean
+          componente?: string
+          exame_id?: string
+          valor_numerico?: number | null
+          valor_qualitativo?:
+            | Database["public"]["Enums"]["resultado_qualitativo"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exame_resultados_exame_id_fkey"
+            columns: ["exame_id"]
+            isOneToOne: false
+            referencedRelation: "exames"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exames: {
+        Row: {
+          alterado: boolean
+          coletado_em: string
+          comunicado_presencialmente: boolean
+          documento_id: string | null
+          gestacao_id: string
+          id: string
+          liberado_em: string | null
+          liberado_por: string | null
+          marcou_checklist: boolean
+          observacao: string | null
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          protocolo_item_id: string | null
+          registrado_em: string
+          registrado_por: string
+          tipo_exame: string
+        }
+        Insert: {
+          alterado?: boolean
+          coletado_em: string
+          comunicado_presencialmente?: boolean
+          documento_id?: string | null
+          gestacao_id: string
+          id: string
+          liberado_em?: string | null
+          liberado_por?: string | null
+          marcou_checklist?: boolean
+          observacao?: string | null
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          protocolo_item_id?: string | null
+          registrado_em?: string
+          registrado_por: string
+          tipo_exame: string
+        }
+        Update: {
+          alterado?: boolean
+          coletado_em?: string
+          comunicado_presencialmente?: boolean
+          documento_id?: string | null
+          gestacao_id?: string
+          id?: string
+          liberado_em?: string | null
+          liberado_por?: string | null
+          marcou_checklist?: boolean
+          observacao?: string | null
+          papel_autor?: Database["public"]["Enums"]["papel_usuario"]
+          protocolo_item_id?: string | null
+          registrado_em?: string
+          registrado_por?: string
+          tipo_exame?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exames_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_gestacao_id_fkey"
+            columns: ["gestacao_id"]
+            isOneToOne: false
+            referencedRelation: "gestacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_liberado_por_fkey"
+            columns: ["liberado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_protocolo_item_id_fkey"
+            columns: ["protocolo_item_id"]
+            isOneToOne: false
+            referencedRelation: "protocolo_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_tipo_exame_fkey"
+            columns: ["tipo_exame"]
+            isOneToOne: false
+            referencedRelation: "tipos_exame"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       gestacao_checklist: {
         Row: {
           data: string | null
@@ -662,6 +850,7 @@ export type Database = {
           raiz_id: string
           semana_fim: number
           semana_ini: number
+          tipo_exame: string | null
           trimestre: number
         }
         Insert: {
@@ -673,6 +862,7 @@ export type Database = {
           raiz_id: string
           semana_fim: number
           semana_ini: number
+          tipo_exame?: string | null
           trimestre: number
         }
         Update: {
@@ -684,6 +874,7 @@ export type Database = {
           raiz_id?: string
           semana_fim?: number
           semana_ini?: number
+          tipo_exame?: string | null
           trimestre?: number
         }
         Relationships: [
@@ -693,6 +884,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "protocolo_itens"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocolo_itens_tipo_exame_fkey"
+            columns: ["tipo_exame"]
+            isOneToOne: false
+            referencedRelation: "tipos_exame"
+            referencedColumns: ["codigo"]
           },
         ]
       }
@@ -737,6 +935,84 @@ export type Database = {
             columns: ["gestacao_id"]
             isOneToOne: false
             referencedRelation: "gestacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tipos_exame: {
+        Row: {
+          codigo: string
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          codigo: string
+          nome: string
+          ordem: number
+        }
+        Update: {
+          codigo?: string
+          nome?: string
+          ordem?: number
+        }
+        Relationships: []
+      }
+      vacinas_gestacao: {
+        Row: {
+          aplicada_em: string | null
+          dose: number
+          gestacao_id: string
+          id: string
+          local: string | null
+          lote: string | null
+          observacao: string | null
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          registrado_em: string
+          registrado_por: string
+          situacao: Database["public"]["Enums"]["situacao_vacina"]
+          vacina: Database["public"]["Enums"]["vacina"]
+        }
+        Insert: {
+          aplicada_em?: string | null
+          dose: number
+          gestacao_id: string
+          id: string
+          local?: string | null
+          lote?: string | null
+          observacao?: string | null
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          registrado_em?: string
+          registrado_por: string
+          situacao: Database["public"]["Enums"]["situacao_vacina"]
+          vacina: Database["public"]["Enums"]["vacina"]
+        }
+        Update: {
+          aplicada_em?: string | null
+          dose?: number
+          gestacao_id?: string
+          id?: string
+          local?: string | null
+          lote?: string | null
+          observacao?: string | null
+          papel_autor?: Database["public"]["Enums"]["papel_usuario"]
+          registrado_em?: string
+          registrado_por?: string
+          situacao?: Database["public"]["Enums"]["situacao_vacina"]
+          vacina?: Database["public"]["Enums"]["vacina"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacinas_gestacao_gestacao_id_fkey"
+            columns: ["gestacao_id"]
+            isOneToOne: false
+            referencedRelation: "gestacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vacinas_gestacao_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -970,7 +1246,34 @@ export type Database = {
           registro_id: number
         }[]
       }
+      calendario_vacinas: {
+        Args: { p_gestacao_id: string; p_incluir_observacao: boolean }
+        Returns: {
+          doses_esperadas: number
+          registros: Json
+          situacao_calendario: string
+          vacina: Database["public"]["Enums"]["vacina"]
+        }[]
+      }
       cancelar_consulta: { Args: { p_consulta_id: string }; Returns: undefined }
+      catalogo_exames: {
+        Args: never
+        Returns: {
+          componente: string
+          componente_nome: string
+          natureza: Database["public"]["Enums"]["natureza_componente"]
+          obrigatorio: boolean
+          ordem_componente: number
+          ordem_tipo: number
+          ref_max: number
+          ref_min: number
+          rotulo_negativo: string
+          rotulo_positivo: string
+          tipo_exame: string
+          tipo_nome: string
+          unidade: string
+        }[]
+      }
       checklist_da_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: {
@@ -984,8 +1287,18 @@ export type Database = {
           semana_fim: number
           semana_ini: number
           status: Database["public"]["Enums"]["status_checklist"]
+          tipo_exame: string
           trimestre: number
         }[]
+      }
+      componente_alterado: {
+        Args: {
+          p_componente: string
+          p_tipo_exame: string
+          p_valor_numerico: number
+          p_valor_qualitativo: Database["public"]["Enums"]["resultado_qualitativo"]
+        }
+        Returns: boolean
       }
       confirmar_upload_documento: {
         Args: { p_documento_id: string }
@@ -1100,11 +1413,32 @@ export type Database = {
         Returns: undefined
       }
       evolucao_vigente: { Args: { p_raiz_id: string }; Returns: string }
+      exames_da_gestacao: {
+        Args: { p_gestacao_id: string }
+        Returns: {
+          alterado: boolean
+          coletado_em: string
+          comunicado_presencialmente: boolean
+          documento_id: string
+          id: string
+          liberado_em: string
+          observacao: string
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          protocolo_item_id: string
+          registrado_em: string
+          registrado_por_nome: string
+          resultados: Json
+          tipo_exame: string
+          tipo_nome: string
+        }[]
+      }
       excluir_documento_rascunho: {
         Args: { p_documento_id: string }
         Returns: undefined
       }
       excluir_rascunho_evolucao: { Args: { p_id: string }; Returns: undefined }
+      excluir_resultado_exame: { Args: { p_id: string }; Returns: undefined }
+      excluir_vacina: { Args: { p_id: string }; Returns: undefined }
       fatores_risco_sugeridos: {
         Args: { p_gestacao_id: string }
         Returns: {
@@ -1143,6 +1477,10 @@ export type Database = {
           p_semana_ini: number
         }
         Returns: string
+      }
+      liberar_exame: {
+        Args: { p_confirmar_comunicado?: boolean; p_id: string }
+        Returns: undefined
       }
       log_documento_acesso: {
         Args: { p_documento_id: string }
@@ -1194,6 +1532,17 @@ export type Database = {
           peso_kg: number
         }[]
       }
+      meus_exames: {
+        Args: never
+        Returns: {
+          coletado_em: string
+          id: string
+          liberado_em: string
+          resultados: Json
+          tipo_exame: string
+          tipo_nome: string
+        }[]
+      }
       minha_ficha_essencial: {
         Args: never
         Returns: {
@@ -1201,6 +1550,15 @@ export type Database = {
           fator_rh: Database["public"]["Enums"]["fator_rh"]
           sem_alergias_conhecidas: boolean
           tipo_sanguineo: Database["public"]["Enums"]["tipo_sanguineo"]
+        }[]
+      }
+      minhas_vacinas: {
+        Args: never
+        Returns: {
+          doses_esperadas: number
+          registros: Json
+          situacao_calendario: string
+          vacina: Database["public"]["Enums"]["vacina"]
         }[]
       }
       paciente_dona_da_gestacao: {
@@ -1245,6 +1603,10 @@ export type Database = {
       }
       pode_acessar_anamnese: {
         Args: { p_paciente_id: string }
+        Returns: boolean
+      }
+      pode_registrar_exame: {
+        Args: { p_gestacao_id: string }
         Returns: boolean
       }
       promover_para_admin: {
@@ -1307,6 +1669,7 @@ export type Database = {
           raiz_id: string
           semana_fim: number
           semana_ini: number
+          tipo_exame: string
           trimestre: number
         }[]
       }
@@ -1355,6 +1718,18 @@ export type Database = {
         Args: { p_codigo_hash: string }
         Returns: string
       }
+      registrar_resultado_exame: {
+        Args: {
+          p_coletado_em: string
+          p_documento_id?: string
+          p_gestacao_id: string
+          p_id: string
+          p_observacao?: string
+          p_resultados: Json
+          p_tipo_exame: string
+        }
+        Returns: boolean
+      }
       registrar_risco_gestacional: {
         Args: {
           p_classificacao: Database["public"]["Enums"]["classificacao_risco"]
@@ -1362,6 +1737,20 @@ export type Database = {
           p_motivo?: string
         }
         Returns: string
+      }
+      registrar_vacina: {
+        Args: {
+          p_aplicada_em?: string
+          p_dose: number
+          p_gestacao_id: string
+          p_id: string
+          p_local?: string
+          p_lote?: string
+          p_observacao?: string
+          p_situacao: Database["public"]["Enums"]["situacao_vacina"]
+          p_vacina: Database["public"]["Enums"]["vacina"]
+        }
+        Returns: undefined
       }
       relatorio_checklist_vencidos: {
         Args: { p_incluir_vencendo?: boolean }
@@ -1426,6 +1815,10 @@ export type Database = {
         }[]
       }
       reordenar_protocolo: { Args: { p_ids: string[] }; Returns: undefined }
+      resultados_do_exame: {
+        Args: { p_exame_id: string; p_incluir_alterado: boolean }
+        Returns: Json
+      }
       revogar_convite_pela_secretaria: {
         Args: { p_paciente_id: string }
         Returns: number
@@ -1479,6 +1872,15 @@ export type Database = {
         }
         Returns: number
       }
+      vacinas_da_gestacao: {
+        Args: { p_gestacao_id: string }
+        Returns: {
+          doses_esperadas: number
+          registros: Json
+          situacao_calendario: string
+          vacina: Database["public"]["Enums"]["vacina"]
+        }[]
+      }
       validar_dados_gestacao: {
         Args: {
           p_dpp_origem: Database["public"]["Enums"]["dpp_origem"]
@@ -1495,6 +1897,10 @@ export type Database = {
           p_pa_sistolica: number
           p_peso_kg: number
         }
+        Returns: undefined
+      }
+      vincular_exame_protocolo: {
+        Args: { p_raiz_id: string; p_tipo_exame?: string }
         Returns: undefined
       }
       vinculos_da_paciente: {
@@ -1559,8 +1965,11 @@ export type Database = {
         | "descolamento_placenta"
         | "isoimunizacao_rh"
       movimentacao_fetal: "presente" | "diminuida" | "ausente"
+      natureza_componente: "quantitativo" | "qualitativo"
       papel_usuario: "paciente" | "medica" | "secretaria" | "admin"
       papel_vinculo: "obstetra" | "medicina_fetal"
+      resultado_qualitativo: "negativo" | "positivo" | "indeterminado"
+      situacao_vacina: "aplicada" | "recusada" | "contraindicada" | "dispensada"
       status_checklist:
         | "pendente"
         | "solicitado"
@@ -1577,6 +1986,7 @@ export type Database = {
         | "outro"
       tipo_gestacao: "unica" | "gemelar"
       tipo_sanguineo: "A" | "B" | "AB" | "O"
+      vacina: "dtpa" | "influenza" | "hepatite_b" | "covid_19"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1761,8 +2171,11 @@ export const Constants = {
         "isoimunizacao_rh",
       ],
       movimentacao_fetal: ["presente", "diminuida", "ausente"],
+      natureza_componente: ["quantitativo", "qualitativo"],
       papel_usuario: ["paciente", "medica", "secretaria", "admin"],
       papel_vinculo: ["obstetra", "medicina_fetal"],
+      resultado_qualitativo: ["negativo", "positivo", "indeterminado"],
+      situacao_vacina: ["aplicada", "recusada", "contraindicada", "dispensada"],
       status_checklist: [
         "pendente",
         "solicitado",
@@ -1781,6 +2194,7 @@ export const Constants = {
       ],
       tipo_gestacao: ["unica", "gemelar"],
       tipo_sanguineo: ["A", "B", "AB", "O"],
+      vacina: ["dtpa", "influenza", "hepatite_b", "covid_19"],
     },
   },
 } as const

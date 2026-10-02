@@ -161,7 +161,8 @@ de retenção da Fase 0 do mobile. `pacientes` e `gestacoes` já não têm delet
   no web e no mobile com rascunho local.
 - **W12** — Anamnese, antecedentes e classificação de risco gestacional (entregue; ver
   [ADR 0007](0007-anamnese-pela-secretaria.md) e [plano-w12-anamnese-risco.md](../plano-w12-anamnese-risco.md)).
-- **W13** — Exames estruturados e vacinas.
+- **W13** — Exames estruturados e vacinas (entregue; ver
+  [ADR 0008](0008-exames-e-vacinas-pela-secretaria.md) e [plano-w13-exames-vacinas.md](../plano-w13-exames-vacinas.md)).
 - **W14** — Linha do tempo e curvas AU × IG e peso × IMC.
 - **W15** — Prescrição e atestado.
 - **W16** — Assinatura ICP-Brasil.

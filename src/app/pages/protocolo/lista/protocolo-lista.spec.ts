@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { ExamesService } from '../../../core/exames/exames.service';
 import { ItemProtocolo, ProtocoloService } from '../../../core/protocolo/protocolo.service';
 import { ProtocoloLista } from './protocolo-lista';
 
@@ -14,15 +15,25 @@ const ativo = {
   ativo: true,
   raiz_id: 'i1',
   marcacoes: 0,
+  tipo_exame: 'hemograma',
 } as ItemProtocolo;
 
 const emUso = { ...ativo, item_id: 'i2', nome: 'Glicemia', ordem: 20, marcacoes: 3 };
 const aposentado = { ...ativo, item_id: 'i3', nome: 'Exame Velho', ativo: false };
 
-function montar(servico: Partial<ProtocoloService>) {
+const CATALOGO = [{ codigo: 'hemograma', nome: 'Hemograma', componentes: [] }];
+
+function montar(servico: Partial<ProtocoloService>, exames: Partial<ExamesService> = {}) {
   TestBed.configureTestingModule({
     imports: [ProtocoloLista],
-    providers: [provideZonelessChangeDetection(), { provide: ProtocoloService, useValue: servico }],
+    providers: [
+      provideZonelessChangeDetection(),
+      { provide: ProtocoloService, useValue: servico },
+      {
+        provide: ExamesService,
+        useValue: { catalogo: vi.fn().mockResolvedValue({ ok: true, valor: CATALOGO }), ...exames },
+      },
+    ],
   });
   return TestBed.createComponent(ProtocoloLista);
 }
@@ -33,6 +44,7 @@ interface Interno {
   mover(item: unknown, direcao: number): Promise<void>;
   aAposentar: { set(v: unknown): void };
   confirmarAposentadoria(): Promise<void>;
+  vincularExame(item: unknown, tipo: string | null): Promise<void>;
 }
 
 describe('ProtocoloLista', () => {
@@ -109,5 +121,42 @@ describe('ProtocoloLista', () => {
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Apenas a equipe.');
+  });
+
+  it('vincula o item ao exame pela raiz e recarrega a lista', async () => {
+    const vincularProtocolo = vi.fn().mockResolvedValue({ ok: true, valor: null });
+    const listar = vi.fn().mockResolvedValue({ ok: true, valor: [ativo] });
+    const fixture = montar({ listar }, { vincularProtocolo });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const componente = fixture.componentInstance as unknown as Interno;
+    await componente.vincularExame(ativo, 'vdrl');
+    await componente.vincularExame(ativo, 'hemograma');
+
+    expect(vincularProtocolo).toHaveBeenCalledTimes(1);
+    expect(vincularProtocolo).toHaveBeenCalledWith('i1', 'vdrl');
+    expect(listar).toHaveBeenCalledTimes(2);
+  });
+
+  it('mostra a recusa do vínculo', async () => {
+    const fixture = montar(
+      { listar: vi.fn().mockResolvedValue({ ok: true, valor: [ativo] }) },
+      {
+        vincularProtocolo: vi
+          .fn()
+          .mockResolvedValue({ ok: false, mensagem: 'Apenas médicas editam o protocolo' }),
+      },
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const componente = fixture.componentInstance as unknown as Interno;
+    await componente.vincularExame(ativo, null);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Apenas médicas editam o protocolo',
+    );
   });
 });

@@ -12,6 +12,7 @@ import { TagModule } from 'primeng/tag';
 import {
   CartaoService,
   ConsultaCartao,
+  DocumentoCartao,
   GestacaoCartao,
   ItemChecklist,
   PacienteCartao,
@@ -23,6 +24,8 @@ import { formatarCpf } from '../../../core/formato/cpf';
 import { deDataIso, formatarData, formatarDataHora, paraDataIso } from '../../../core/formato/data';
 import { PacientesService } from '../../../core/pacientes/pacientes.service';
 import { CartaoAnamnese } from './cartao-anamnese';
+import { PainelExames } from '../../exames/painel/painel-exames';
+import { PainelVacinas } from '../../exames/vacinas/painel-vacinas';
 import { CartaoDocumentos } from './cartao-documentos';
 import { CartaoGestacoes } from './cartao-gestacoes';
 import { CartaoProntuario } from './cartao-prontuario';
@@ -61,6 +64,8 @@ const STATUS_ROTULO: Record<string, string> = {
     CartaoGestacoes,
     CartaoProntuario,
     CodigoConvite,
+    PainelExames,
+    PainelVacinas,
     DatePickerModule,
     DialogModule,
     InputTextModule,
@@ -88,6 +93,7 @@ export class CartaoGestante implements OnInit {
   protected readonly vinculos = signal<VinculoCartao[]>([]);
   protected readonly consultas = signal<ConsultaCartao[]>([]);
   protected readonly checklist = signal<ItemChecklist[]>([]);
+  protected readonly documentos = signal<DocumentoCartao[]>([]);
 
   protected readonly carregando = signal(true);
   protected readonly agindo = signal(false);
@@ -134,6 +140,11 @@ export class CartaoGestante implements OnInit {
 
   protected readonly gestacaoAtiva = computed(() => this.gestacaoAtual()?.status === 'ativa');
 
+  // Laudos que o resultado de exame pode referenciar.
+  protected readonly laudos = computed(() =>
+    this.documentos().map((d) => ({ id: d.id, titulo: d.titulo })),
+  );
+
   protected readonly pendentes = computed(
     () => this.checklist().filter((i) => i.janela === 'vencido' || i.janela === 'vencendo').length,
   );
@@ -179,16 +190,19 @@ export class CartaoGestante implements OnInit {
     if (gestacao === null) {
       this.consultas.set([]);
       this.checklist.set([]);
+      this.documentos.set([]);
       return;
     }
 
-    const [consultas, checklist] = await Promise.all([
+    const [consultas, checklist, documentos] = await Promise.all([
       this.cartao.consultas(gestacao.id),
       this.cartao.checklist(gestacao.id),
+      this.cartao.documentos(gestacao.id),
     ]);
 
     this.consultas.set(consultas.ok ? consultas.valor : []);
     this.checklist.set(checklist.ok ? checklist.valor : []);
+    this.documentos.set(documentos.ok ? documentos.valor : []);
   }
 
   protected abrirMarcacao(item: ItemChecklist): void {

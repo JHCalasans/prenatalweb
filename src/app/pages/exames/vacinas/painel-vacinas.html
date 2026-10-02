@@ -1,0 +1,171 @@
+<section class="painel">
+  <h2>Vacinas</h2>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @for (v of vacinas(); track v.vacina) {
+    <article class="vacina">
+      <header class="linha cabecalho">
+        <strong>{{ rotuloVacina[v.vacina] }}</strong>
+        <span class="dica">
+          {{ v.dosesEsperadas === 1 ? '1 dose' : v.dosesEsperadas + ' doses' }}
+        </span>
+        <p-tag
+          [value]="rotuloCalendario[v.situacaoCalendario]"
+          [severity]="severidade(v.situacaoCalendario)"
+        />
+        @if (gestacaoAtiva() && v.registros.length < v.dosesEsperadas) {
+          <p-button
+            label="Registrar dose"
+            icon="pi pi-plus"
+            severity="secondary"
+            [text]="true"
+            [disabled]="agindo()"
+            (onClick)="abrirNova(v)"
+          />
+        }
+      </header>
+
+      @for (r of v.registros; track r.id) {
+        <div class="linha registro">
+          <span>
+            Dose {{ r.dose }} · {{ rotuloSituacao[r.situacao] }}
+            @if (r.aplicadaEm) {
+              · {{ formatarData(r.aplicadaEm) }}
+            }
+            @if (r.lote) {
+              · lote {{ r.lote }}
+            }
+            @if (r.local) {
+              · {{ r.local }}
+            }
+          </span>
+          @if (gestacaoAtiva()) {
+            <p-button
+              label="Editar"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="abrirEdicao(v, r)"
+            />
+            <p-button
+              label="Excluir"
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="aExcluir.set({ vacina: v.vacina, registro: r })"
+            />
+          }
+        </div>
+      }
+    </article>
+  }
+</section>
+
+<p-dialog
+  [header]="editando() ? 'Vacina: ' + rotuloVacina[editando()!.vacina] : 'Vacina'"
+  [visible]="editando() !== null"
+  (visibleChange)="editando.set(null)"
+  [modal]="true"
+  [focusOnShow]="false"
+  [style]="{ width: '30rem' }"
+>
+  <div class="formulario">
+    <label for="dose">Dose</label>
+    <p-select
+      inputId="dose"
+      [options]="opcoesDose()"
+      optionLabel="rotulo"
+      optionValue="valor"
+      [ngModel]="dose()"
+      (ngModelChange)="dose.set($event)"
+      [disabled]="editando()?.existente ?? false"
+      [fluid]="true"
+      appendTo="body"
+    />
+
+    <label for="situacao">Situação</label>
+    <p-select
+      inputId="situacao"
+      [options]="opcoesSituacao"
+      optionLabel="rotulo"
+      optionValue="valor"
+      [ngModel]="situacao()"
+      (ngModelChange)="situacao.set($event)"
+      [fluid]="true"
+      appendTo="body"
+    />
+
+    <label for="aplicadaEm">
+      Data de aplicação{{ situacao() === 'aplicada' ? '' : ' (opcional)' }}
+    </label>
+    <p-datepicker
+      inputId="aplicadaEm"
+      dateFormat="dd/mm/yy"
+      [ngModel]="aplicadaEm()"
+      (ngModelChange)="aplicadaEm.set($event)"
+      [maxDate]="hoje"
+      [showIcon]="true"
+      [fluid]="true"
+      appendTo="body"
+    />
+
+    <label for="lote">Lote</label>
+    <input id="lote" type="text" pInputText [ngModel]="lote()" (ngModelChange)="lote.set($event)" />
+
+    <label for="local">Local</label>
+    <input
+      id="local"
+      type="text"
+      pInputText
+      [ngModel]="local()"
+      (ngModelChange)="local.set($event)"
+    />
+
+    <label for="observacao">Observação</label>
+    <input
+      id="observacao"
+      type="text"
+      pInputText
+      [ngModel]="observacao()"
+      (ngModelChange)="observacao.set($event)"
+    />
+  </div>
+
+  @if (erroDialogo()) {
+    <p-message severity="error" [text]="erroDialogo()!" />
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="editando.set(null)" />
+    <p-button label="Salvar" [loading]="agindo()" (onClick)="salvar()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Excluir registro de vacina"
+  [visible]="aExcluir() !== null"
+  (visibleChange)="aExcluir.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    Excluir a dose {{ aExcluir()?.registro?.dose }} de
+    <strong>{{ aExcluir() ? rotuloVacina[aExcluir()!.vacina] : '' }}</strong
+    >?
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aExcluir.set(null)" />
+    <p-button
+      label="Excluir"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarExclusao()"
+    />
+  </ng-template>
+</p-dialog>

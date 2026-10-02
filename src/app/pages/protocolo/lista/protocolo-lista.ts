@@ -1,5 +1,10 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
@@ -9,6 +14,7 @@ import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { ExamesService, TipoExameCatalogo } from '../../../core/exames/exames.service';
 import { ItemProtocolo, ProtocoloService } from '../../../core/protocolo/protocolo.service';
 
 @Component({
@@ -16,6 +22,7 @@ import { ItemProtocolo, ProtocoloService } from '../../../core/protocolo/protoco
     ButtonModule,
     CheckboxModule,
     DialogModule,
+    FormsModule,
     InputNumberModule,
     InputTextModule,
     MessageModule,
@@ -31,12 +38,14 @@ import { ItemProtocolo, ProtocoloService } from '../../../core/protocolo/protoco
 export class ProtocoloLista implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly protocolo = inject(ProtocoloService);
+  private readonly exames = inject(ExamesService);
 
   protected readonly itens = signal<ItemProtocolo[]>([]);
   protected readonly carregando = signal(true);
   protected readonly agindo = signal(false);
   protected readonly erro = signal<string | null>(null);
   protected readonly mostrarAposentados = signal(false);
+  protected readonly tiposExame = signal<TipoExameCatalogo[]>([]);
 
   protected readonly editando = signal<ItemProtocolo | null>(null);
   protected readonly criando = signal(false);
@@ -66,8 +75,42 @@ export class ProtocoloLista implements OnInit {
     return item !== null && item.marcacoes > 0;
   });
 
+  // "Sem vínculo" fica no topo; o catálogo vem do Postgres.
+  protected readonly opcoesExame = computed(() => [
+    { rotulo: 'Sem vínculo', valor: null as string | null },
+    ...this.tiposExame().map((t) => ({ rotulo: t.nome, valor: t.codigo as string | null })),
+  ]);
+
   ngOnInit(): void {
     void this.carregar();
+    void this.carregarCatalogo();
+  }
+
+  private async carregarCatalogo(): Promise<void> {
+    const resultado = await this.exames.catalogo();
+    if (resultado.ok) {
+      this.tiposExame.set(resultado.valor);
+    } else {
+      this.erro.set(resultado.mensagem);
+    }
+  }
+
+  protected async vincularExame(item: ItemProtocolo, tipo: string | null): Promise<void> {
+    if (this.agindo() || item.tipo_exame === tipo) {
+      return;
+    }
+    this.agindo.set(true);
+    this.erro.set(null);
+    try {
+      const resultado = await this.exames.vincularProtocolo(item.raiz_id, tipo);
+      // carregar() limpa o erro; a recusa precisa aparecer depois dele.
+      await this.carregar();
+      if (!resultado.ok) {
+        this.erro.set(resultado.mensagem);
+      }
+    } finally {
+      this.agindo.set(false);
+    }
   }
 
   protected async carregar(): Promise<void> {

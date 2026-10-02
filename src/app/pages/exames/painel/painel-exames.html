@@ -1,0 +1,245 @@
+<section class="painel">
+  <div class="topo">
+    <h2>Exames</h2>
+    @if (gestacaoAtiva()) {
+      <p-button
+        label="Registrar resultado"
+        icon="pi pi-plus"
+        [disabled]="carregando() || agindo()"
+        (onClick)="abrirNovo()"
+      />
+    }
+  </div>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @if (!carregando() && lista().length === 0) {
+    <p class="vazio">Nenhum resultado de exame registrado.</p>
+  }
+
+  @for (e of lista(); track e.id) {
+    <article class="exame">
+      <header class="linha">
+        <strong>{{ e.tipoNome }}</strong>
+        <span class="dica">coletado em {{ formatarData(e.coletadoEm) }}</span>
+        @if (e.alterado) {
+          <p-tag severity="danger" value="Alterado" />
+        }
+        @if (e.liberadoEm) {
+          <p-tag severity="success" value="Liberado" />
+        } @else {
+          <p-tag severity="secondary" value="Não liberado" />
+        }
+      </header>
+
+      <ul class="resultados">
+        @for (r of e.resultados; track r.componente) {
+          <li [class.alterado]="r.alterado">
+            <span class="nome">{{ r.nome }}</span>
+            <strong>{{ formatarValor(r) }}</strong>
+            @if (formatarReferencia(r)) {
+              <span class="dica">ref. {{ formatarReferencia(r) }}</span>
+            }
+          </li>
+        }
+      </ul>
+
+      @if (e.observacao) {
+        <p class="dica">{{ e.observacao }}</p>
+      }
+      <p class="dica">
+        Registrado por {{ e.registradoPorNome }} ({{ rotuloPapel[e.papelAutor] }})
+        @if (tituloDocumento(e.documentoId); as laudo) {
+          · laudo: {{ laudo }}
+        }
+      </p>
+
+      @if (!e.liberadoEm) {
+        <div class="acoes">
+          @if (podeLiberar()) {
+            <p-button
+              label="Liberar para a gestante"
+              icon="pi pi-send"
+              severity="secondary"
+              [text]="true"
+              [disabled]="agindo()"
+              (onClick)="pedirLiberacao(e)"
+            />
+          }
+          <p-button
+            label="Editar"
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            [disabled]="agindo()"
+            (onClick)="abrirEdicao(e)"
+          />
+          <p-button
+            label="Excluir"
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [disabled]="agindo()"
+            (onClick)="aExcluir.set(e)"
+          />
+        </div>
+      }
+    </article>
+  }
+</section>
+
+<p-dialog
+  header="Resultado de exame"
+  [visible]="editando() !== null"
+  (visibleChange)="editando.set(null)"
+  [modal]="true"
+  [focusOnShow]="false"
+  [style]="{ width: '36rem' }"
+>
+  <div class="formulario">
+    <label for="tipoExame">Exame</label>
+    <p-select
+      inputId="tipoExame"
+      [options]="opcoesTipo()"
+      optionLabel="rotulo"
+      optionValue="valor"
+      [ngModel]="editando()?.tipoExame"
+      (ngModelChange)="escolherTipo($event)"
+      [disabled]="editando()?.existente ?? false"
+      [fluid]="true"
+      appendTo="body"
+    />
+
+    <label for="coletadoEm">Data da coleta</label>
+    <p-datepicker
+      inputId="coletadoEm"
+      dateFormat="dd/mm/yy"
+      [ngModel]="coletadoEm()"
+      (ngModelChange)="coletadoEm.set($event)"
+      [maxDate]="hoje"
+      [showIcon]="true"
+      [fluid]="true"
+      appendTo="body"
+    />
+
+    @if (tipoSelecionado(); as tipo) {
+      @for (c of tipo.componentes; track c.codigo) {
+        <label [for]="'comp-' + c.codigo">
+          {{ c.nome }}{{ c.unidade ? ' (' + c.unidade + ')' : '' }}
+        </label>
+        @if (c.natureza === 'quantitativo') {
+          <p-inputnumber
+            [inputId]="'comp-' + c.codigo"
+            [ngModel]="numeros()[c.codigo] ?? null"
+            (ngModelChange)="definirNumero(c.codigo, $event)"
+            [min]="0"
+            [maxFractionDigits]="2"
+            locale="pt-BR"
+            [fluid]="true"
+          />
+        } @else {
+          <p-selectbutton
+            [options]="opcoesQualitativas(c)"
+            optionLabel="rotulo"
+            optionValue="valor"
+            [ngModel]="qualitativos()[c.codigo] ?? null"
+            (ngModelChange)="definirQualitativo(c.codigo, $event)"
+          />
+        }
+      }
+    }
+
+    @if (documentos().length > 0) {
+      <label for="laudo">Laudo (opcional)</label>
+      <p-select
+        inputId="laudo"
+        [options]="opcoesDocumento()"
+        optionLabel="rotulo"
+        optionValue="valor"
+        [ngModel]="documentoId()"
+        (ngModelChange)="documentoId.set($event)"
+        [fluid]="true"
+        appendTo="body"
+      />
+    }
+
+    <label for="observacao">Observação</label>
+    <textarea
+      id="observacao"
+      pTextarea
+      rows="2"
+      [ngModel]="observacao()"
+      (ngModelChange)="observacao.set($event)"
+    ></textarea>
+  </div>
+
+  @if (erroDialogo()) {
+    <p-message severity="error" [text]="erroDialogo()!" />
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="editando.set(null)" />
+    <p-button label="Salvar" [loading]="agindo()" (onClick)="salvar()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Liberar exame alterado"
+  [visible]="aLiberar() !== null"
+  (visibleChange)="aLiberar.set(null)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <p class="quem">{{ aLiberar()?.tipoNome }}</p>
+  <p>
+    Este resultado está alterado. Ele só chega à gestante depois de você confirmar que a comunicação
+    foi presencial.
+  </p>
+  <div class="caixa">
+    <p-checkbox
+      inputId="comunicado"
+      [binary]="true"
+      [ngModel]="comunicado()"
+      (ngModelChange)="comunicado.set($event)"
+    />
+    <label for="comunicado">Comuniquei o resultado presencialmente à gestante</label>
+  </div>
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aLiberar.set(null)" />
+    <p-button
+      label="Liberar"
+      [disabled]="!comunicado()"
+      [loading]="agindo()"
+      (onClick)="confirmarLiberacao()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Excluir resultado"
+  [visible]="aExcluir() !== null"
+  (visibleChange)="aExcluir.set(null)"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+>
+  <p>
+    Excluir o resultado de <strong>{{ aExcluir()?.tipoNome }}</strong
+    >? Se ele marcou o item do checklist como realizado, o item volta a pendente.
+  </p>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aExcluir.set(null)" />
+    <p-button
+      label="Excluir"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarExclusao()"
+    />
+  </ng-template>
+</p-dialog>

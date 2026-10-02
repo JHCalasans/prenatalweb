@@ -1,0 +1,68 @@
+.painel {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 55%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--aconchego-texto-primario);
+}
+
+.dica {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--aconchego-texto-secundario);
+}
+
+.vacina {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(0 0 0 / 6%);
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+// Colunas fixas mantêm nome, doses, situação e ação alinhados entre todas as
+// vacinas, independente do tamanho de cada rótulo.
+.cabecalho {
+  display: grid;
+  grid-template-columns: 8.5rem 4.5rem 8.5rem 1fr;
+}
+
+@media (max-width: 40rem) {
+  .cabecalho {
+    display: flex;
+  }
+}
+
+.registro {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--aconchego-texto-secundario);
+  }
+}

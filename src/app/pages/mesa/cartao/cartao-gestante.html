@@ -170,6 +170,16 @@
         </p-table>
       </section>
 
+      <app-painel-exames
+        [gestacaoId]="gestacaoAtual()!.id"
+        [gestacaoAtiva]="gestacaoAtiva()"
+        [podeLiberar]="true"
+        [documentos]="laudos()"
+        (mudou)="carregar()"
+      />
+
+      <app-painel-vacinas [gestacaoId]="gestacaoAtual()!.id" [gestacaoAtiva]="gestacaoAtiva()" />
+
       <app-cartao-documentos [gestacaoId]="gestacaoAtual()!.id" [gestacaoAtiva]="gestacaoAtiva()" />
     } @else {
       <section class="bloco">
