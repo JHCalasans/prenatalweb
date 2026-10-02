@@ -1,11 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { PostgrestError } from '@supabase/supabase-js';
 import { Database } from '../../../types/database.types';
-import { ErroSupabase } from '../erro/supabase-erro';
+import { ERRO_GENERICO, ErroSupabase } from '../erro/supabase-erro';
 import { SUPABASE_CLIENT } from '../supabase-client';
 
 type LinhaLista = Database['public']['Functions']['pacientes_da_secretaria']['Returns'][number];
-type PapelVinculo = Database['public']['Enums']['papel_vinculo'];
+export type PapelVinculo = Database['public']['Enums']['papel_vinculo'];
+export type DppOrigem = Database['public']['Enums']['dpp_origem'];
+export type TipoGestacao = Database['public']['Enums']['tipo_gestacao'];
 
 export type PacienteLista = LinhaLista;
 
@@ -32,6 +34,22 @@ export interface DadosPaciente {
 export interface DadosNovaPaciente extends DadosPaciente {
   medicaId: string;
   papelVinculo: PapelVinculo;
+}
+
+// Cadastro pela própria médica: a RPC cria paciente, vínculo com auth.uid()
+// e convite numa transação, e devolve o código em texto uma única vez.
+export interface DadosPacienteMedica extends DadosPaciente {
+  papelVinculo: PapelVinculo;
+}
+
+// Projeção da RPC gestacao_ativa_da_paciente: sem desfecho, que é clínico.
+export interface GestacaoAtiva {
+  id: string;
+  dppOrigem: DppOrigem;
+  dum: string | null;
+  dppUsg: string | null;
+  dppFinal: string;
+  tipo: TipoGestacao;
 }
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensagem: string };
@@ -127,6 +145,82 @@ export class PacientesService {
       p_data_nascimento: opcional(dados.dataNascimento),
       p_cpf: opcional(dados.cpf),
       p_contato_emergencia: opcional(dados.contatoEmergencia),
+    });
+    if (error) {
+      return { ok: false, mensagem: this.mensagem(error) };
+    }
+    return { ok: true, valor: null };
+  }
+
+  async criarComConvite(
+    dados: DadosPacienteMedica,
+  ): Promise<Resultado<{ pacienteId: string; codigo: string }>> {
+    const { data, error } = await this.supabase.rpc('criar_paciente_com_convite', {
+      p_nome: dados.nome,
+      p_papel_vinculo: dados.papelVinculo,
+      p_data_nascimento: opcional(dados.dataNascimento),
+      p_cpf: opcional(dados.cpf),
+      p_contato_emergencia: opcional(dados.contatoEmergencia),
+    });
+    if (error) {
+      return { ok: false, mensagem: this.mensagem(error) };
+    }
+    const linha = (data ?? [])[0];
+    if (linha === undefined) {
+      return { ok: false, mensagem: ERRO_GENERICO };
+    }
+    return { ok: true, valor: { pacienteId: linha.paciente_id, codigo: linha.codigo } };
+  }
+
+  async reemitirConvite(pacienteId: string): Promise<Resultado<string>> {
+    const { data, error } = await this.supabase.rpc('reemitir_convite', {
+      p_paciente_id: pacienteId,
+    });
+    if (error) {
+      return { ok: false, mensagem: this.mensagem(error) };
+    }
+    return { ok: true, valor: data };
+  }
+
+  async gestacaoAtiva(pacienteId: string): Promise<Resultado<GestacaoAtiva | null>> {
+    const { data, error } = await this.supabase.rpc('gestacao_ativa_da_paciente', {
+      p_paciente_id: pacienteId,
+    });
+    if (error) {
+      return { ok: false, mensagem: this.mensagem(error) };
+    }
+    const linha = (data ?? [])[0];
+    if (linha === undefined) {
+      return { ok: true, valor: null };
+    }
+    return {
+      ok: true,
+      valor: {
+        id: linha.gestacao_id,
+        dppOrigem: linha.dpp_origem,
+        dum: linha.dum,
+        dppUsg: linha.dpp_usg,
+        dppFinal: linha.dpp_final,
+        tipo: linha.tipo,
+      },
+    };
+  }
+
+  async criarGestacao(pacienteId: string, dum: string): Promise<Resultado<string>> {
+    const { data, error } = await this.supabase.rpc('criar_gestacao_pela_secretaria', {
+      p_paciente_id: pacienteId,
+      p_dum: dum,
+    });
+    if (error) {
+      return { ok: false, mensagem: this.mensagem(error) };
+    }
+    return { ok: true, valor: data };
+  }
+
+  async corrigirDum(gestacaoId: string, dum: string): Promise<Resultado<null>> {
+    const { error } = await this.supabase.rpc('atualizar_dum_pela_secretaria', {
+      p_gestacao_id: gestacaoId,
+      p_dum: dum,
     });
     if (error) {
       return { ok: false, mensagem: this.mensagem(error) };

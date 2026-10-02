@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -43,6 +43,14 @@ export class PacienteVinculos implements OnInit {
 
   protected readonly aInativar = signal<Vinculo | null>(null);
   protected readonly aTransferir = signal<Vinculo | null>(null);
+
+  protected readonly medicasDestino = computed(() => {
+    const atual = this.aTransferir();
+    if (atual === null) {
+      return this.medicas();
+    }
+    return this.medicas().filter((medica) => medica.id !== atual.medica_id);
+  });
 
   protected readonly papeis = [
     { rotulo: 'Obstetra', valor: 'obstetra' as PapelVinculo },

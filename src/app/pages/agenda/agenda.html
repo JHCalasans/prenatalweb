@@ -77,6 +77,9 @@
       <section class="dia">
         <h2>
           {{ formatarData(dia.iso) }}
+          @if (dia.iso === hojeIso) {
+            <p-tag value="Hoje" severity="info" />
+          }
           <span>{{ dia.consultas.length }} consulta(s)</span>
         </h2>
         <p-table [value]="dia.consultas" dataKey="consulta_id">
@@ -112,6 +115,16 @@
                     (onClick)="abrirReagendar(c)"
                   />
                   @if (vencida(c)) {
+                    @if (ehMedica()) {
+                      <p-button
+                        label="Realizada"
+                        icon="pi pi-check"
+                        severity="success"
+                        [text]="true"
+                        [disabled]="agindo()"
+                        (onClick)="pedirRealizada(c)"
+                      />
+                    }
                     <p-button
                       label="Marcar falta"
                       icon="pi pi-exclamation-triangle"
@@ -143,11 +156,14 @@
 <p-dialog
   header="Nova consulta"
   [visible]="criando()"
-  (visibleChange)="criando.set(false)"
+  (visibleChange)="fecharNovaConsulta()"
   [modal]="true"
   [style]="{ width: '30rem' }"
 >
   <form class="formulario" [formGroup]="formNova" (ngSubmit)="confirmarNovaConsulta()">
+    @if (formNova.touched && formNova.invalid) {
+      <p-message severity="warn" text="Preencha os campos obrigatórios para agendar." />
+    }
     <label for="paciente">Paciente</label>
     <p-select
       inputId="paciente"
@@ -159,6 +175,29 @@
       filterBy="nome"
       placeholder="Buscar paciente"
     />
+
+    @if (precisaDeGestacao()) {
+      @if (ehSecretaria()) {
+        <p-message
+          severity="warn"
+          text="Esta paciente ainda não tem gestação cadastrada. Informe a DUM para cadastrar junto com a consulta."
+        />
+        <label for="dum">Data da última menstruação</label>
+        <p-datepicker
+          inputId="dum"
+          formControlName="dum"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [minDate]="dumMinima"
+          [maxDate]="hoje"
+        />
+      } @else {
+        <p-message severity="warn">
+          Esta paciente ainda não tem gestação cadastrada. Cadastre no
+          <a routerLink="/mesa/{{ formNova.controls.pacienteId.value }}">cartão da gestante</a>.
+        </p-message>
+      }
+    }
 
     @if (ehSecretaria()) {
       <label for="medica">Médica responsável</label>
@@ -179,6 +218,7 @@
       [showTime]="true"
       hourFormat="24"
       [showIcon]="true"
+      [appendTo]="'body'"
     />
 
     <label for="tipo">Tipo</label>
@@ -195,8 +235,13 @@
   </form>
 
   <ng-template #footer>
-    <p-button label="Voltar" severity="secondary" (onClick)="criando.set(false)" />
-    <p-button label="Agendar" [loading]="agindo()" (onClick)="confirmarNovaConsulta()" />
+    <p-button label="Voltar" severity="secondary" (onClick)="fecharNovaConsulta()" />
+    <p-button
+      label="Agendar"
+      [loading]="agindo()"
+      [disabled]="precisaDeGestacao() && !ehSecretaria()"
+      (onClick)="confirmarNovaConsulta()"
+    />
   </ng-template>
 </p-dialog>
 
@@ -210,6 +255,9 @@
   <p class="quem">{{ resumoConsulta(aReagendar()) }}</p>
 
   <form class="formulario" [formGroup]="formReagendar" (ngSubmit)="confirmarReagendar()">
+    @if (formReagendar.touched && formReagendar.invalid) {
+      <p-message severity="warn" text="Escolha a nova data e hora." />
+    }
     <label for="nova-data">Nova data e hora</label>
     <p-datepicker
       inputId="nova-data"
@@ -217,6 +265,7 @@
       [showTime]="true"
       hourFormat="24"
       [showIcon]="true"
+      [appendTo]="'body'"
     />
   </form>
 
@@ -227,7 +276,13 @@
 </p-dialog>
 
 <p-dialog
-  [header]="aFechar()?.acao === 'falta' ? 'Marcar falta' : 'Cancelar consulta'"
+  [header]="
+    aFechar()?.acao === 'falta'
+      ? 'Marcar falta'
+      : aFechar()?.acao === 'realizada'
+        ? 'Registrar consulta realizada'
+        : 'Cancelar consulta'
+  "
   [visible]="aFechar() !== null"
   (visibleChange)="aFechar.set(null)"
   [modal]="true"
@@ -237,12 +292,29 @@
   @if (aFechar()?.acao === 'falta') {
     <p class="dica">A falta aparece como pendência no painel da médica até haver nova consulta.</p>
   }
+  @if (aFechar()?.acao === 'realizada') {
+    <p class="dica">
+      A consulta sai da agenda como realizada, como se tivesse sido registrada no app.
+    </p>
+  }
 
   <ng-template #footer>
     <p-button label="Voltar" severity="secondary" (onClick)="aFechar.set(null)" />
     <p-button
-      [label]="aFechar()?.acao === 'falta' ? 'Marcar falta' : 'Cancelar consulta'"
-      [severity]="aFechar()?.acao === 'falta' ? 'warn' : 'danger'"
+      [label]="
+        aFechar()?.acao === 'falta'
+          ? 'Marcar falta'
+          : aFechar()?.acao === 'realizada'
+            ? 'Registrar realizada'
+            : 'Cancelar consulta'
+      "
+      [severity]="
+        aFechar()?.acao === 'falta'
+          ? 'warn'
+          : aFechar()?.acao === 'realizada'
+            ? 'success'
+            : 'danger'
+      "
       [loading]="agindo()"
       (onClick)="confirmarFechamento()"
     />

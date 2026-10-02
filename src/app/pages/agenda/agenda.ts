@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
@@ -16,7 +17,7 @@ import {
 } from '../../core/agenda/agenda.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { formatarData, formatarDataHora, formatarHora, paraDataIso } from '../../core/formato/data';
-import { Medica, PacientesService } from '../../core/pacientes/pacientes.service';
+import { GestacaoAtiva, Medica, PacientesService } from '../../core/pacientes/pacientes.service';
 
 type Severidade = 'success' | 'secondary' | 'info' | 'warn' | 'danger';
 type Visao = 'semana' | 'mes';
@@ -56,6 +57,7 @@ export function inicioDaSemana(base: Date): Date {
     InputTextModule,
     MessageModule,
     ReactiveFormsModule,
+    RouterLink,
     SelectModule,
     TableModule,
     TagModule,
@@ -87,12 +89,14 @@ export class Agenda implements OnInit {
   protected readonly aReagendar = signal<ConsultaAgenda | null>(null);
   protected readonly aFechar = signal<{
     consulta: ConsultaAgenda;
-    acao: 'cancelar' | 'falta';
+    acao: 'cancelar' | 'falta' | 'realizada';
   } | null>(null);
 
   protected readonly formatarData = formatarData;
   protected readonly formatarDataHora = formatarDataHora;
   protected readonly formatarHora = formatarHora;
+
+  protected readonly hojeIso = paraDataIso(new Date()) ?? '';
 
   protected readonly visoes = [
     { rotulo: 'Semana', valor: 'semana' as Visao },
@@ -119,6 +123,7 @@ export class Agenda implements OnInit {
     dataHora: [null as Date | null, Validators.required],
     tipo: ['Consulta de pré-natal'],
     local: [''],
+    dum: [null as Date | null],
   });
 
   protected readonly formReagendar = this.fb.group({
@@ -126,6 +131,23 @@ export class Agenda implements OnInit {
   });
 
   protected readonly ehSecretaria = computed(() => this.auth.papel() === 'secretaria');
+  protected readonly ehMedica = computed(() => this.auth.papel() === 'medica');
+
+  protected readonly hoje = new Date();
+  // Mesma janela da RPC: DUM de uma gestação em curso (até 300 dias atrás).
+  protected readonly dumMinima = new Date(
+    this.hoje.getFullYear(),
+    this.hoje.getMonth(),
+    this.hoje.getDate() - 300,
+  );
+
+  protected readonly pacienteEscolhida = signal('');
+  protected readonly gestacaoDaPaciente = signal<GestacaoAtiva | null>(null);
+  protected readonly verificandoGestacao = signal(false);
+  protected readonly precisaDeGestacao = computed(
+    () =>
+      this.pacienteEscolhida() !== '' && !this.verificandoGestacao() && this.gestacaoDaPaciente() === null,
+  );
 
   protected readonly periodo = computed<{ de: Date; ate: Date }>(() => {
     const base = this.ref();
@@ -184,6 +206,40 @@ export class Agenda implements OnInit {
       void this.carregarMedicas();
     }
     void this.carregar();
+    this.formNova.controls.pacienteId.valueChanges.subscribe((pacienteId) => {
+      void this.verificarGestacao(pacienteId);
+    });
+  }
+
+  // A obrigatoriedade da DUM depende da paciente escolhida: só a secretaria
+  // cadastra gestação pelo diálogo, e só quando não há gestação ativa.
+  private async verificarGestacao(pacienteId: string): Promise<void> {
+    const dum = this.formNova.controls.dum;
+    this.pacienteEscolhida.set(pacienteId);
+    dum.setValue(null);
+    dum.removeValidators(Validators.required);
+    dum.updateValueAndValidity();
+    if (pacienteId === '') {
+      this.gestacaoDaPaciente.set(null);
+      this.verificandoGestacao.set(false);
+      return;
+    }
+    this.verificandoGestacao.set(true);
+    const resultado = await this.pacientesService.gestacaoAtiva(pacienteId);
+    // Troca rápida de paciente: a resposta tardia da anterior é descartada.
+    if (this.formNova.controls.pacienteId.value !== pacienteId) {
+      return;
+    }
+    this.verificandoGestacao.set(false);
+    if (!resultado.ok) {
+      this.erro.set(resultado.mensagem);
+      return;
+    }
+    this.gestacaoDaPaciente.set(resultado.valor);
+    if (resultado.valor === null) {
+      dum.addValidators(Validators.required);
+      dum.updateValueAndValidity();
+    }
   }
 
   private async carregarMedicas(): Promise<void> {
@@ -252,7 +308,13 @@ export class Agenda implements OnInit {
   }
 
   protected voltarHoje(): void {
-    this.ref.set(inicioDaSemana(new Date()));
+    const hoje = new Date();
+    // Na visão mês, a semana atual pode começar no mês anterior: voltar ao dia 1º.
+    this.ref.set(
+      this.visao() === 'mes'
+        ? new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+        : inicioDaSemana(hoje),
+    );
     void this.carregar();
   }
 
@@ -264,27 +326,54 @@ export class Agenda implements OnInit {
       return;
     }
     this.pacientes.set(pacientes.valor);
+    this.gestacaoDaPaciente.set(null);
+    this.pacienteEscolhida.set('');
+    this.verificandoGestacao.set(false);
     this.formNova.setValue({
       pacienteId: '',
       medicaId: this.ehSecretaria() ? '' : (this.auth.perfil()?.id ?? ''),
       dataHora: null,
       tipo: 'Consulta de pré-natal',
       local: '',
+      dum: null,
     });
     this.criando.set(true);
   }
 
+  protected fecharNovaConsulta(): void {
+    this.criando.set(false);
+    this.gestacaoDaPaciente.set(null);
+    this.pacienteEscolhida.set('');
+    this.verificandoGestacao.set(false);
+  }
+
   protected async confirmarNovaConsulta(): Promise<void> {
-    if (this.formNova.invalid || this.agindo()) {
+    if (this.agindo()) {
       return;
     }
-    const { pacienteId, medicaId, dataHora, tipo, local } = this.formNova.getRawValue();
+    // Sem marcar como tocado, o clique não mostra o que está faltando.
+    if (this.formNova.invalid) {
+      this.formNova.markAllAsTouched();
+      return;
+    }
+    // O botão da médica já vem desabilitado; o Enter no form passaria por aqui.
+    if (this.precisaDeGestacao() && !this.ehSecretaria()) {
+      return;
+    }
+    const { pacienteId, medicaId, dataHora, tipo, local, dum } = this.formNova.getRawValue();
     if (dataHora === null) {
       return;
     }
     this.agindo.set(true);
     this.erro.set(null);
     try {
+      if (this.precisaDeGestacao() && this.ehSecretaria()) {
+        const criada = await this.pacientesService.criarGestacao(pacienteId, paraDataIso(dum)!);
+        if (!criada.ok) {
+          this.erro.set(criada.mensagem);
+          return;
+        }
+      }
       const resultado = await this.agenda.agendar({
         pacienteId,
         medicaId,
@@ -311,7 +400,14 @@ export class Agenda implements OnInit {
   protected async confirmarReagendar(): Promise<void> {
     const consulta = this.aReagendar();
     const { dataHora } = this.formReagendar.getRawValue();
-    if (consulta === null || dataHora === null || this.agindo()) {
+    if (this.agindo()) {
+      return;
+    }
+    if (consulta === null) {
+      return;
+    }
+    if (dataHora === null) {
+      this.formReagendar.markAllAsTouched();
       return;
     }
     this.agindo.set(true);
@@ -337,6 +433,10 @@ export class Agenda implements OnInit {
     this.aFechar.set({ consulta: c, acao: 'falta' });
   }
 
+  protected pedirRealizada(c: ConsultaAgenda): void {
+    this.aFechar.set({ consulta: c, acao: 'realizada' });
+  }
+
   protected async confirmarFechamento(): Promise<void> {
     const alvo = this.aFechar();
     if (alvo === null || this.agindo()) {
@@ -348,7 +448,9 @@ export class Agenda implements OnInit {
       const resultado =
         alvo.acao === 'cancelar'
           ? await this.agenda.cancelar(alvo.consulta.consulta_id)
-          : await this.agenda.marcarFalta(alvo.consulta.consulta_id);
+          : alvo.acao === 'falta'
+            ? await this.agenda.marcarFalta(alvo.consulta.consulta_id)
+            : await this.agenda.registrarRealizada(alvo.consulta.consulta_id);
       this.aFechar.set(null);
       if (!resultado.ok) {
         this.erro.set(resultado.mensagem);

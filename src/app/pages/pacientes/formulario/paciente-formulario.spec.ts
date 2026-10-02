@@ -19,6 +19,7 @@ function montar(servico: Partial<PacientesService>, id: string | null) {
         provide: PacientesService,
         useValue: {
           listarMedicas: vi.fn().mockResolvedValue({ ok: true, valor: [] }),
+          gestacaoAtiva: vi.fn().mockResolvedValue({ ok: true, valor: null }),
           ...servico,
         },
       },

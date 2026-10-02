@@ -119,11 +119,12 @@
   <form [formGroup]="destino">
     <p-select
       formControlName="medicaId"
-      [options]="medicas()"
+      [options]="medicasDestino()"
       optionLabel="nome"
       optionValue="id"
       placeholder="Selecione a nova médica"
       ariaLabel="Nova médica responsável"
+      appendTo="body"
     />
   </form>
 

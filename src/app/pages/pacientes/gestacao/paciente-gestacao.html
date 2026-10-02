@@ -1,0 +1,93 @@
+<section class="painel">
+  <h2>
+    Gestação
+    @if (gestacao(); as g) {
+      <p-tag value="Ativa" severity="success" />
+    }
+  </h2>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @if (carregando()) {
+    <p class="apagado">Carregando…</p>
+  } @else if (gestacao() === null) {
+    <p class="dica">
+      A consulta só pode ser agendada com uma gestação cadastrada. Informe a data da última
+      menstruação para cadastrar.
+    </p>
+    <form class="cadastrar" [formGroup]="formulario" (ngSubmit)="cadastrar()">
+      <div class="campo">
+        <label for="dum">Data da última menstruação</label>
+        <p-datepicker
+          inputId="dum"
+          formControlName="dum"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [minDate]="dumMinima"
+          [maxDate]="hoje"
+          placeholder="dd/mm/aaaa"
+        />
+      </div>
+      <p-button
+        type="submit"
+        label="Cadastrar gestação"
+        icon="pi pi-plus"
+        [disabled]="formulario.invalid || agindo()"
+      />
+    </form>
+  } @else if (gestacao()!.dppOrigem === 'dum') {
+    <dl class="resumo">
+      <div>
+        <dt>DUM</dt>
+        <dd>{{ formatarData(gestacao()!.dum) }}</dd>
+      </div>
+      <div>
+        <dt>DPP prevista</dt>
+        <dd>{{ formatarData(gestacao()!.dppFinal) }}</dd>
+      </div>
+    </dl>
+
+    @if (editando()) {
+      <form class="cadastrar" [formGroup]="formulario" (ngSubmit)="salvarCorrecao()">
+        <div class="campo">
+          <label for="dum-correcao">Nova DUM</label>
+          <p-datepicker
+            inputId="dum-correcao"
+            formControlName="dum"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [minDate]="dumMinima"
+            [maxDate]="hoje"
+          />
+        </div>
+        <p-button type="submit" label="Salvar" [loading]="agindo()" />
+        <p-button
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [disabled]="agindo()"
+          (onClick)="fecharCorrecao()"
+        />
+      </form>
+    } @else {
+      <p-button
+        label="Corrigir DUM"
+        icon="pi pi-pencil"
+        severity="secondary"
+        [text]="true"
+        [disabled]="agindo()"
+        (onClick)="abrirCorrecao()"
+      />
+    }
+  } @else {
+    <dl class="resumo">
+      <div>
+        <dt>DPP prevista</dt>
+        <dd>{{ formatarData(gestacao()!.dppFinal) }}</dd>
+      </div>
+    </dl>
+    <p class="dica">DPP definida por ultrassom pela médica.</p>
+  }
+</section>

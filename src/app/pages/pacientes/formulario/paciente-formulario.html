@@ -67,6 +67,7 @@
     </form>
 
     @if (edicao()) {
+      <app-paciente-gestacao [pacienteId]="id()!" />
       <app-paciente-vinculos [pacienteId]="id()!" />
     }
   }
