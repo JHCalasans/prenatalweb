@@ -1,0 +1,308 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <p class="eyebrow">Clínica</p>
+      <h1>Catálogo de exames</h1>
+    </div>
+    <p-button
+      label="Novo tipo"
+      icon="pi pi-plus"
+      [disabled]="agindo()"
+      (onClick)="abrirCriacao()"
+    />
+  </header>
+
+  <p class="dica">
+    Tipos criados aqui já valem para o registro de resultados e para o vínculo com o protocolo. A
+    exclusão é bloqueada quando o exame tem resultados ou vínculo registrados.
+  </p>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <p-table [value]="tipos()" [loading]="carregando()" dataKey="codigo">
+    <ng-template #header>
+      <tr>
+        <th>Exame</th>
+        <th>Código</th>
+        <th>Ordem</th>
+        <th>Componentes</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-tipo>
+      <tr>
+        <td>{{ tipo.nome }}</td>
+        <td>
+          <code>{{ tipo.codigo }}</code>
+        </td>
+        <td>{{ tipo.ordem }}</td>
+        <td class="componentes">
+          @for (c of tipo.componentes; track c.codigo) {
+            <span class="componente">{{ c.nome }}</span>
+          }
+        </td>
+        <td class="acoes">
+          <p-button
+            label="Editar"
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            [disabled]="agindo()"
+            (onClick)="abrirEdicao(tipo)"
+          />
+          <p-button
+            label="Excluir"
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [disabled]="agindo()"
+            (onClick)="aExcluir.set(tipo)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="vazio">Nenhum tipo de exame no catálogo.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>
+
+<p-dialog
+  [header]="editando() ? 'Editar tipo de exame' : 'Novo tipo de exame'"
+  [visible]="aberto()"
+  (visibleChange)="fechar()"
+  [modal]="true"
+  [focusOnShow]="false"
+  [style]="{ width: '40rem' }"
+>
+  <p-message
+    severity="warn"
+    text="Referências e rótulos valem também para resultados já registrados: o valor gravado não muda, mas o que é exibido sim."
+  />
+
+  <form class="formulario" [formGroup]="formulario" (ngSubmit)="salvar()">
+    <div class="grade">
+      <div>
+        <label for="codigo">Código</label>
+        <input
+          id="codigo"
+          type="text"
+          pInputText
+          formControlName="codigo"
+          autocomplete="off"
+          placeholder="ex.: tsh"
+        />
+      </div>
+      <div>
+        <label for="ordem">Ordem</label>
+        <p-inputnumber inputId="ordem" formControlName="ordem" [min]="0" [useGrouping]="false" />
+      </div>
+    </div>
+    <p class="dica">
+      O código usa letras minúsculas, números e underline, e não muda depois de criado.
+    </p>
+
+    <label for="nome">Nome do exame</label>
+    <input id="nome" type="text" pInputText formControlName="nome" autocomplete="off" />
+
+    <div class="secao">
+      <span class="rotulo-secao">Componentes</span>
+      @if (formulario.hasError('required', 'componentes')) {
+        <p class="dica">Informe ao menos um componente.</p>
+      }
+      @if (formulario.hasError('duplicado', 'componentes')) {
+        <p class="dica">Há componentes com código repetido.</p>
+      }
+
+      <div formArrayName="componentes">
+        @for (grupo of componentes.controls; track $index) {
+          <div class="componente-form" [formGroupName]="$index">
+            <div class="cabecalho-componente">
+              <strong>Componente {{ $index + 1 }}</strong>
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                type="button"
+                ariaLabel="Remover componente"
+                [disabled]="agindo()"
+                (onClick)="removerComponente($index)"
+              />
+            </div>
+
+            <div class="grade">
+              <div>
+                <label [for]="'comp-codigo-' + $index">Código</label>
+                <input
+                  [id]="'comp-codigo-' + $index"
+                  type="text"
+                  pInputText
+                  formControlName="codigo"
+                  autocomplete="off"
+                  placeholder="ex.: hb"
+                />
+              </div>
+              <div>
+                <label [for]="'comp-natureza-' + $index">Natureza</label>
+                <p-select
+                  [inputId]="'comp-natureza-' + $index"
+                  formControlName="natureza"
+                  [options]="naturezas"
+                  optionLabel="rotulo"
+                  optionValue="valor"
+                  appendTo="body"
+                />
+              </div>
+            </div>
+
+            <label [for]="'comp-nome-' + $index">Nome</label>
+            <input
+              [id]="'comp-nome-' + $index"
+              type="text"
+              pInputText
+              formControlName="nome"
+              autocomplete="off"
+            />
+
+            @if (grupo.get('natureza')?.value === 'quantitativo') {
+              <div class="grade tres">
+                <div>
+                  <label [for]="'comp-unidade-' + $index">Unidade</label>
+                  <input
+                    [id]="'comp-unidade-' + $index"
+                    type="text"
+                    pInputText
+                    formControlName="unidade"
+                    autocomplete="off"
+                    placeholder="ex.: g/dL"
+                  />
+                </div>
+                <div>
+                  <label [for]="'comp-min-' + $index">Ref. mínima</label>
+                  <p-inputnumber
+                    [inputId]="'comp-min-' + $index"
+                    formControlName="refMin"
+                    [min]="0"
+                    [maxFractionDigits]="2"
+                    [useGrouping]="false"
+                  />
+                </div>
+                <div>
+                  <label [for]="'comp-max-' + $index">Ref. máxima</label>
+                  <p-inputnumber
+                    [inputId]="'comp-max-' + $index"
+                    formControlName="refMax"
+                    [min]="0"
+                    [maxFractionDigits]="2"
+                    [useGrouping]="false"
+                  />
+                </div>
+              </div>
+            } @else {
+              <div class="grade">
+                <div>
+                  <label [for]="'comp-neg-' + $index">Rótulo negativo</label>
+                  <input
+                    [id]="'comp-neg-' + $index"
+                    type="text"
+                    pInputText
+                    formControlName="rotuloNegativo"
+                    autocomplete="off"
+                    placeholder="ex.: Não reagente"
+                  />
+                </div>
+                <div>
+                  <label [for]="'comp-pos-' + $index">Rótulo positivo</label>
+                  <input
+                    [id]="'comp-pos-' + $index"
+                    type="text"
+                    pInputText
+                    formControlName="rotuloPositivo"
+                    autocomplete="off"
+                    placeholder="ex.: Reagente"
+                  />
+                </div>
+              </div>
+              <div class="linha">
+                <p-checkbox
+                  [inputId]="'comp-positivo-' + $index"
+                  formControlName="positivoAlterado"
+                  [binary]="true"
+                />
+                <label [for]="'comp-positivo-' + $index" class="inline">
+                  Positivo conta como alterado
+                </label>
+              </div>
+            }
+
+            <div class="linha">
+              <p-checkbox
+                [inputId]="'comp-obrigatorio-' + $index"
+                formControlName="obrigatorio"
+                [binary]="true"
+              />
+              <label [for]="'comp-obrigatorio-' + $index" class="inline">Obrigatório</label>
+            </div>
+          </div>
+        }
+      </div>
+
+      <p-button
+        label="Adicionar componente"
+        icon="pi pi-plus"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        type="button"
+        [disabled]="agindo()"
+        (onClick)="adicionarComponente()"
+      />
+    </div>
+  </form>
+
+  @if (erroDialogo()) {
+    <p-message severity="error" [text]="erroDialogo()!" />
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="fechar()" />
+    <p-button
+      label="Salvar"
+      [disabled]="formulario.invalid || agindo()"
+      [loading]="agindo()"
+      (onClick)="salvar()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Excluir tipo de exame"
+  [visible]="aExcluir() !== null"
+  (visibleChange)="aExcluir.set(null)"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+>
+  <p>
+    Excluir <strong>{{ aExcluir()?.nome }}</strong> do catálogo? Exames com resultados registrados
+    ou vinculados ao protocolo não podem ser excluídos.
+  </p>
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="aExcluir.set(null)" />
+    <p-button
+      label="Excluir"
+      severity="danger"
+      [loading]="agindo()"
+      (onClick)="confirmarExclusao()"
+    />
+  </ng-template>
+</p-dialog>

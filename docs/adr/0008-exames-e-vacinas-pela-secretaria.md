@@ -6,6 +6,12 @@ Aceito — 2026-10-03, junto com a fase W13 (migration `20261003120000_exames_va
 `prenatalapp`, cenários 117–130 do `supabase/tests/rls_smoke.sql`). Ver
 [plano-w13-exames-vacinas.md](../plano-w13-exames-vacinas.md).
 
+Amendado na emenda da W13 (2026-10-05) — o catálogo deixa de ser fixo por migration: a tela
+`/catalogo`, exclusiva do admin, cria, edita e exclui tipos e componentes por RPC com gate
+`is_admin` e auditoria `exame.tipo_*` (migration `20261005120000_catalogo_exames_admin.sql`,
+cenários 131–137). Ver [plano-catalogo-exames-admin.md](../plano-catalogo-exames-admin.md) e a
+seção "Emenda" no fim.
+
 ## Contexto
 
 Até a W12, exame era só um item do checklist marcado "realizado" e um laudo em PDF em
@@ -52,7 +58,9 @@ realizado à mão, o exame não assume a marcação e excluí-lo não a desfaz.
 referência e **sem o rótulo de alterado**, e o calendário das próprias vacinas (`minhas_vacinas`).
 
 O que **não** muda: a secretaria não libera exame, não classifica risco e não alcança evolução,
-laudo, checklist nem desfecho da gestação. O admin não alcança nenhuma RPC de exame ou vacina. As
+laudo, checklist nem desfecho da gestação. O admin não alcança nenhuma RPC de resultado de exame
+ou vacina — desde a emenda, alcança só as RPCs do catálogo (`salvar_tipo_exame`,
+`excluir_tipo_exame`). As
 tabelas novas não têm policy nem grant.
 
 ## Alternativas consideradas
@@ -80,6 +88,34 @@ tabelas novas não têm policy nem grant.
   hepatite B), com leitura auditada. Se a clínica quiser restringir, o caminho é recortar a RPC por
   vínculo ou separar sorologias.
 - As referências provisórias podem classificar mal um resultado até serem validadas; a correção é
-  uma migration que muda o catálogo, sem tocar nas telas.
+  uma migration que muda o catálogo, sem tocar nas telas. (Desde a emenda, a correção também pode
+  ser feita pela tela `/catalogo` do admin.)
 - O vínculo do exame com o protocolo é por tipo: itens criados depois ou não listados no seed ficam
   sem marcação automática até a médica escolher o exame em `/protocolo`.
+
+## Emenda — o catálogo deixa de ser fixo (2026-10-05)
+
+Decisão original: catálogo de tipos e componentes muda por migration, sem tela de edição — as
+referências são clínicas e mudariam com validação. Na prática, isso transformava cada ajuste de
+referência em trabalho de desenvolvimento.
+
+**A tela `/catalogo` do web (exclusiva do admin)** cria, edita e exclui tipos e componentes,
+sempre pelas RPCs `security definer` `salvar_tipo_exame` (upsert do tipo + substituição da lista de
+componentes numa transação) e `excluir_tipo_exame`, com gate `is_admin()`, mensagens de recusa em
+português e auditoria `exame.tipo_criado` / `exame.tipo_editado` / `exame.tipo_excluido` (código e
+nome no `meta`, sem valores clínicos). As tabelas seguem sem policy nem grant.
+
+Guardas:
+
+- `tipos_exame.codigo` e `componentes_exame.codigo` são imutáveis depois de criados (são chave
+  referenciada por `exames`, `protocolo_itens` e pelos resultados).
+- Excluir tipo é recusado quando há resultados de exame ou vínculo com o protocolo; remover um
+  componente que já tem resultado é recusado no salvar — a leitura dos exames junta o catálogo
+  atual, e o valor registrado não pode sumir da tela.
+- Editar referências e rótulos vale também para resultados já registrados (o valor gravado e o
+  `alterado` de então não mudam; o que é exibido na referência, sim). O diálogo avisa.
+
+Médica e secretaria continuam só lendo o catálogo (`catalogo_exames`, que passou a devolver
+`positivo_alterado`). Migration `20261005120000_catalogo_exames_admin.sql` no `prenatalapp`,
+cenários 131–137 do `supabase/tests/rls_smoke.sql`; ver
+[plano-catalogo-exames-admin.md](../plano-catalogo-exames-admin.md).

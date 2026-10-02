@@ -67,6 +67,12 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/equipe/lista/equipe-lista').then((m) => m.EquipeLista),
       },
       {
+        path: 'catalogo',
+        canActivate: [papelGuard('admin')],
+        loadComponent: () =>
+          import('./pages/exames/catalogo/exames-catalogo').then((m) => m.ExamesCatalogo),
+      },
+      {
         path: 'protocolo',
         canActivate: [papelGuard('medica')],
         loadComponent: () =>

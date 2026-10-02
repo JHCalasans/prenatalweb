@@ -24,6 +24,7 @@ const MENU: readonly ItemMenu[] = [
   { rota: '/convites', rotulo: 'Convites', icone: 'pi-send', papeis: ['secretaria', 'admin'] },
   { rota: '/protocolo', rotulo: 'Protocolo', icone: 'pi-list-check', papeis: ['medica'] },
   { rota: '/equipe', rotulo: 'Equipe', icone: 'pi-id-card', papeis: ['admin'] },
+  { rota: '/catalogo', rotulo: 'Catálogo de exames', icone: 'pi-database', papeis: ['admin'] },
   { rota: '/auditoria', rotulo: 'Auditoria', icone: 'pi-history', papeis: ['medica', 'admin'] },
   { rota: '/relatorios', rotulo: 'Relatórios', icone: 'pi-chart-bar', papeis: ['medica', 'admin'] },
 ];

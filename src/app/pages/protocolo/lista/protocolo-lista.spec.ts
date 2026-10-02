@@ -21,7 +21,7 @@ const ativo = {
 const emUso = { ...ativo, item_id: 'i2', nome: 'Glicemia', ordem: 20, marcacoes: 3 };
 const aposentado = { ...ativo, item_id: 'i3', nome: 'Exame Velho', ativo: false };
 
-const CATALOGO = [{ codigo: 'hemograma', nome: 'Hemograma', componentes: [] }];
+const CATALOGO = [{ codigo: 'hemograma', nome: 'Hemograma', ordem: 1, componentes: [] }];
 
 function montar(servico: Partial<ProtocoloService>, exames: Partial<ExamesService> = {}) {
   TestBed.configureTestingModule({

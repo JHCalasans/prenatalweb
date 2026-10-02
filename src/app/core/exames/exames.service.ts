@@ -58,12 +58,15 @@ export interface ComponenteCatalogo {
   refMax: number | null;
   rotuloNegativo: string | null;
   rotuloPositivo: string | null;
+  positivoAlterado: boolean;
   obrigatorio: boolean;
+  ordem: number;
 }
 
 export interface TipoExameCatalogo {
   codigo: string;
   nome: string;
+  ordem: number;
   componentes: ComponenteCatalogo[];
 }
 
@@ -217,7 +220,12 @@ function agruparCatalogo(linhas: LinhaCatalogo[]): TipoExameCatalogo[] {
   for (const l of linhas) {
     let tipo = tipos.get(l.tipo_exame);
     if (tipo === undefined) {
-      tipo = { codigo: l.tipo_exame, nome: l.tipo_nome, componentes: [] };
+      tipo = {
+        codigo: l.tipo_exame,
+        nome: l.tipo_nome,
+        ordem: l.ordem_tipo,
+        componentes: [],
+      };
       tipos.set(l.tipo_exame, tipo);
     }
     tipo.componentes.push({
@@ -229,7 +237,9 @@ function agruparCatalogo(linhas: LinhaCatalogo[]): TipoExameCatalogo[] {
       refMax: l.ref_max ?? null,
       rotuloNegativo: l.rotulo_negativo ?? null,
       rotuloPositivo: l.rotulo_positivo ?? null,
+      positivoAlterado: l.positivo_alterado,
       obrigatorio: l.obrigatorio,
+      ordem: l.ordem_componente,
     });
   }
   return [...tipos.values()];

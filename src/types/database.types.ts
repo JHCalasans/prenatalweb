@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   graphql_public: {
@@ -16,12 +10,7 @@ export type Database = {
     }
     Functions: {
       graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
+        Args: { extensions?: Json; operationName?: string; query?: string; variables?: Json }
         Returns: Json
       }
     }
@@ -147,7 +136,7 @@ export type Database = {
           entidade: string
           entidade_id: string | null
           id: number
-          meta: Json
+          meta: NonNullable<Json>
         }
         Insert: {
           acao: string
@@ -156,7 +145,7 @@ export type Database = {
           entidade: string
           entidade_id?: string | null
           id?: number
-          meta?: Json
+          meta?: NonNullable<Json>
         }
         Update: {
           acao?: string
@@ -165,7 +154,7 @@ export type Database = {
           entidade?: string
           entidade_id?: string | null
           id?: number
-          meta?: Json
+          meta?: NonNullable<Json>
         }
         Relationships: [
           {
@@ -426,9 +415,7 @@ export type Database = {
           id: string
           ig_dias: number | null
           motivo_retificacao: string | null
-          movimentacao_fetal:
-            | Database["public"]["Enums"]["movimentacao_fetal"]
-            | null
+          movimentacao_fetal: Database["public"]["Enums"]["movimentacao_fetal"] | null
           pa_diastolica: number | null
           pa_sistolica: number | null
           papel_vinculo: Database["public"]["Enums"]["papel_vinculo"]
@@ -441,9 +428,7 @@ export type Database = {
         }
         Insert: {
           altura_uterina_cm?: number | null
-          apresentacao?:
-            | Database["public"]["Enums"]["apresentacao_fetal"]
-            | null
+          apresentacao?: Database["public"]["Enums"]["apresentacao_fetal"] | null
           assinada_em?: string | null
           atendida_em: string
           atualizado_em?: string
@@ -462,9 +447,7 @@ export type Database = {
           id: string
           ig_dias?: number | null
           motivo_retificacao?: string | null
-          movimentacao_fetal?:
-            | Database["public"]["Enums"]["movimentacao_fetal"]
-            | null
+          movimentacao_fetal?: Database["public"]["Enums"]["movimentacao_fetal"] | null
           pa_diastolica?: number | null
           pa_sistolica?: number | null
           papel_vinculo: Database["public"]["Enums"]["papel_vinculo"]
@@ -477,9 +460,7 @@ export type Database = {
         }
         Update: {
           altura_uterina_cm?: number | null
-          apresentacao?:
-            | Database["public"]["Enums"]["apresentacao_fetal"]
-            | null
+          apresentacao?: Database["public"]["Enums"]["apresentacao_fetal"] | null
           assinada_em?: string | null
           atendida_em?: string
           atualizado_em?: string
@@ -498,9 +479,7 @@ export type Database = {
           id?: string
           ig_dias?: number | null
           motivo_retificacao?: string | null
-          movimentacao_fetal?:
-            | Database["public"]["Enums"]["movimentacao_fetal"]
-            | null
+          movimentacao_fetal?: Database["public"]["Enums"]["movimentacao_fetal"] | null
           pa_diastolica?: number | null
           pa_sistolica?: number | null
           papel_vinculo?: Database["public"]["Enums"]["papel_vinculo"]
@@ -548,27 +527,21 @@ export type Database = {
           componente: string
           exame_id: string
           valor_numerico: number | null
-          valor_qualitativo:
-            | Database["public"]["Enums"]["resultado_qualitativo"]
-            | null
+          valor_qualitativo: Database["public"]["Enums"]["resultado_qualitativo"] | null
         }
         Insert: {
           alterado: boolean
           componente: string
           exame_id: string
           valor_numerico?: number | null
-          valor_qualitativo?:
-            | Database["public"]["Enums"]["resultado_qualitativo"]
-            | null
+          valor_qualitativo?: Database["public"]["Enums"]["resultado_qualitativo"] | null
         }
         Update: {
           alterado?: boolean
           componente?: string
           exame_id?: string
           valor_numerico?: number | null
-          valor_qualitativo?:
-            | Database["public"]["Enums"]["resultado_qualitativo"]
-            | null
+          valor_qualitativo?: Database["public"]["Enums"]["resultado_qualitativo"] | null
         }
         Relationships: [
           {
@@ -1109,7 +1082,7 @@ export type Database = {
     }
     Functions: {
       acoes_auditadas: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           acao: string
         }[]
@@ -1171,16 +1144,9 @@ export type Database = {
           versao: number
         }[]
       }
-      aposentar_protocolo_item: {
-        Args: { p_item_id: string }
-        Returns: undefined
-      }
+      aposentar_protocolo_item: { Args: { p_item_id: string }; Returns: undefined }
       assinar_evolucao: {
-        Args: {
-          p_id: string
-          p_motivo_retificacao?: string
-          p_revisao_base: number
-        }
+        Args: { p_id: string; p_motivo_retificacao?: string; p_revisao_base: number }
         Returns: string
       }
       atribuir_vinculo_pela_secretaria: {
@@ -1228,12 +1194,7 @@ export type Database = {
         Returns: string
       }
       auditoria_da_clinica: {
-        Args: {
-          p_acao?: string
-          p_ate: string
-          p_desde: string
-          p_entidade?: string
-        }
+        Args: { p_acao?: string; p_ate: string; p_desde: string; p_entidade?: string }
         Returns: {
           acao: string
           alvo: string
@@ -1257,7 +1218,7 @@ export type Database = {
       }
       cancelar_consulta: { Args: { p_consulta_id: string }; Returns: undefined }
       catalogo_exames: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           componente: string
           componente_nome: string
@@ -1265,6 +1226,7 @@ export type Database = {
           obrigatorio: boolean
           ordem_componente: number
           ordem_tipo: number
+          positivo_alterado: boolean
           ref_max: number
           ref_min: number
           rotulo_negativo: string
@@ -1300,10 +1262,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      confirmar_upload_documento: {
-        Args: { p_documento_id: string }
-        Returns: undefined
-      }
+      confirmar_upload_documento: { Args: { p_documento_id: string }; Returns: undefined }
       convite_codigo_hash: { Args: { p_codigo: string }; Returns: string }
       convites_da_secretaria: {
         Args: { p_busca?: string; p_situacao?: string }
@@ -1384,17 +1343,14 @@ export type Database = {
         Returns: string
       }
       current_papel: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["papel_usuario"]
       }
       definir_crm: {
         Args: { p_crm?: string; p_crm_uf?: string; p_medica_id: string }
         Returns: undefined
       }
-      emitir_convite_pela_secretaria: {
-        Args: { p_paciente_id: string }
-        Returns: string
-      }
+      emitir_convite_pela_secretaria: { Args: { p_paciente_id: string }; Returns: string }
       emitir_convites_em_lote: {
         Args: { p_paciente_ids: string[] }
         Returns: {
@@ -1432,12 +1388,10 @@ export type Database = {
           tipo_nome: string
         }[]
       }
-      excluir_documento_rascunho: {
-        Args: { p_documento_id: string }
-        Returns: undefined
-      }
+      excluir_documento_rascunho: { Args: { p_documento_id: string }; Returns: undefined }
       excluir_rascunho_evolucao: { Args: { p_id: string }; Returns: undefined }
       excluir_resultado_exame: { Args: { p_id: string }; Returns: undefined }
+      excluir_tipo_exame: { Args: { p_codigo: string }; Returns: undefined }
       excluir_vacina: { Args: { p_id: string }; Returns: undefined }
       fatores_risco_sugeridos: {
         Args: { p_gestacao_id: string }
@@ -1446,7 +1400,7 @@ export type Database = {
           descricao: string
         }[]
       }
-      gerar_codigo_convite: { Args: never; Returns: string }
+      gerar_codigo_convite: { Args: Record<PropertyKey, never>; Returns: string }
       gestacao_ativa_da_paciente: {
         Args: { p_paciente_id: string }
         Returns: {
@@ -1459,33 +1413,20 @@ export type Database = {
         }[]
       }
       ig_semanas: { Args: { p_dpp_final: string }; Returns: number }
-      inativar_vinculo_pela_secretaria: {
-        Args: { p_vinculo_id: string }
-        Returns: undefined
-      }
-      iniciar_retificacao: {
-        Args: { p_evolucao_id: string; p_id: string }
-        Returns: undefined
-      }
-      is_admin: { Args: never; Returns: boolean }
-      is_medica: { Args: never; Returns: boolean }
-      is_secretaria: { Args: never; Returns: boolean }
+      inativar_vinculo_pela_secretaria: { Args: { p_vinculo_id: string }; Returns: undefined }
+      iniciar_retificacao: { Args: { p_evolucao_id: string; p_id: string }; Returns: undefined }
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean }
+      is_medica: { Args: Record<PropertyKey, never>; Returns: boolean }
+      is_secretaria: { Args: Record<PropertyKey, never>; Returns: boolean }
       janela_checklist: {
-        Args: {
-          p_ig_semanas: number
-          p_semana_fim: number
-          p_semana_ini: number
-        }
+        Args: { p_ig_semanas: number; p_semana_fim: number; p_semana_ini: number }
         Returns: string
       }
       liberar_exame: {
         Args: { p_confirmar_comunicado?: boolean; p_id: string }
         Returns: undefined
       }
-      log_documento_acesso: {
-        Args: { p_documento_id: string }
-        Returns: undefined
-      }
+      log_documento_acesso: { Args: { p_documento_id: string }; Returns: undefined }
       marcar_checklist_item: {
         Args: {
           p_data?: string
@@ -1497,25 +1438,13 @@ export type Database = {
         Returns: undefined
       }
       marcar_consulta: {
-        Args: {
-          p_consulta_id: string
-          p_status: Database["public"]["Enums"]["status_consulta"]
-        }
+        Args: { p_consulta_id: string; p_status: Database["public"]["Enums"]["status_consulta"] }
         Returns: undefined
       }
       marcar_falta: { Args: { p_consulta_id: string }; Returns: undefined }
-      medica_vinculada_a_gestacao: {
-        Args: { p_gestacao_id: string }
-        Returns: boolean
-      }
-      medica_vinculada_ao_documento: {
-        Args: { p_documento_id: string }
-        Returns: boolean
-      }
-      medica_vinculada_ao_paciente: {
-        Args: { p_paciente_id: string }
-        Returns: boolean
-      }
+      medica_vinculada_a_gestacao: { Args: { p_gestacao_id: string }; Returns: boolean }
+      medica_vinculada_ao_documento: { Args: { p_documento_id: string }; Returns: boolean }
+      medica_vinculada_ao_paciente: { Args: { p_paciente_id: string }; Returns: boolean }
       medidas_da_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: {
@@ -1533,7 +1462,7 @@ export type Database = {
         }[]
       }
       meus_exames: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           coletado_em: string
           id: string
@@ -1544,7 +1473,7 @@ export type Database = {
         }[]
       }
       minha_ficha_essencial: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           alergias: string
           fator_rh: Database["public"]["Enums"]["fator_rh"]
@@ -1553,7 +1482,7 @@ export type Database = {
         }[]
       }
       minhas_vacinas: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           doses_esperadas: number
           registros: Json
@@ -1561,11 +1490,8 @@ export type Database = {
           vacina: Database["public"]["Enums"]["vacina"]
         }[]
       }
-      paciente_dona_da_gestacao: {
-        Args: { p_gestacao_id: string }
-        Returns: boolean
-      }
-      paciente_id_for_me: { Args: never; Returns: string }
+      paciente_dona_da_gestacao: { Args: { p_gestacao_id: string }; Returns: boolean }
+      paciente_id_for_me: { Args: Record<PropertyKey, never>; Returns: string }
       pacientes_da_secretaria: {
         Args: { p_busca?: string }
         Returns: {
@@ -1579,7 +1505,7 @@ export type Database = {
         }[]
       }
       painel_da_medica: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           achados_para_comunicar: number
           checklist_vencendo: number
@@ -1601,22 +1527,10 @@ export type Database = {
           urgencia_score: number
         }[]
       }
-      pode_acessar_anamnese: {
-        Args: { p_paciente_id: string }
-        Returns: boolean
-      }
-      pode_registrar_exame: {
-        Args: { p_gestacao_id: string }
-        Returns: boolean
-      }
-      promover_para_admin: {
-        Args: { p_nome?: string; p_user_id: string }
-        Returns: undefined
-      }
-      promover_para_medica: {
-        Args: { p_nome?: string; p_user_id: string }
-        Returns: undefined
-      }
+      pode_acessar_anamnese: { Args: { p_paciente_id: string }; Returns: boolean }
+      pode_registrar_exame: { Args: { p_gestacao_id: string }; Returns: boolean }
+      promover_para_admin: { Args: { p_nome?: string; p_user_id: string }; Returns: undefined }
+      promover_para_medica: { Args: { p_nome?: string; p_user_id: string }; Returns: undefined }
       promover_para_secretaria: {
         Args: { p_nome?: string; p_user_id: string }
         Returns: undefined
@@ -1681,10 +1595,7 @@ export type Database = {
         Args: { p_consulta_id: string; p_data_hora: string }
         Returns: undefined
       }
-      reativar_protocolo_item: {
-        Args: { p_item_id: string }
-        Returns: undefined
-      }
+      reativar_protocolo_item: { Args: { p_item_id: string }; Returns: undefined }
       reemitir_convite: { Args: { p_paciente_id: string }; Returns: string }
       registrar_anamnese: {
         Args: {
@@ -1714,10 +1625,7 @@ export type Database = {
         }
         Returns: number
       }
-      registrar_ativacao_convite: {
-        Args: { p_codigo_hash: string }
-        Returns: string
-      }
+      registrar_ativacao_convite: { Args: { p_codigo_hash: string }; Returns: string }
       registrar_resultado_exame: {
         Args: {
           p_coletado_em: string
@@ -1819,10 +1727,7 @@ export type Database = {
         Args: { p_exame_id: string; p_incluir_alterado: boolean }
         Returns: Json
       }
-      revogar_convite_pela_secretaria: {
-        Args: { p_paciente_id: string }
-        Returns: number
-      }
+      revogar_convite_pela_secretaria: { Args: { p_paciente_id: string }; Returns: number }
       riscos_da_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: {
@@ -1856,6 +1761,16 @@ export type Database = {
           p_revisao_base: number
         }
         Returns: number
+      }
+      salvar_tipo_exame: {
+        Args: {
+          p_codigo: string
+          p_componentes: Json
+          p_criando: boolean
+          p_nome: string
+          p_ordem: number
+        }
+        Returns: undefined
       }
       transferir_vinculo_pela_secretaria: {
         Args: { p_nova_medica_id: string; p_vinculo_id: string }
@@ -1941,20 +1856,10 @@ export type Database = {
         | "transtorno_mental"
       consumo: "nunca" | "parou" | "atual"
       desfecho_gestacao:
-        | "parto_normal"
-        | "cesarea"
-        | "aborto"
-        | "obito_fetal"
-        | "transferencia_cuidado"
-        | "outro"
+        "parto_normal" | "cesarea" | "aborto" | "obito_fetal" | "transferencia_cuidado" | "outro"
       dpp_origem: "dum" | "usg"
       fator_rh: "positivo" | "negativo"
-      grau_edema:
-        | "ausente"
-        | "uma_cruz"
-        | "duas_cruzes"
-        | "tres_cruzes"
-        | "quatro_cruzes"
+      grau_edema: "ausente" | "uma_cruz" | "duas_cruzes" | "tres_cruzes" | "quatro_cruzes"
       intercorrencia_obstetrica:
         | "pre_eclampsia"
         | "eclampsia"
@@ -1970,20 +1875,11 @@ export type Database = {
       papel_vinculo: "obstetra" | "medicina_fetal"
       resultado_qualitativo: "negativo" | "positivo" | "indeterminado"
       situacao_vacina: "aplicada" | "recusada" | "contraindicada" | "dispensada"
-      status_checklist:
-        | "pendente"
-        | "solicitado"
-        | "realizado"
-        | "nao_aplicavel"
+      status_checklist: "pendente" | "solicitado" | "realizado" | "nao_aplicavel"
       status_consulta: "agendada" | "realizada" | "cancelada" | "faltou"
       status_evolucao: "rascunho" | "assinada"
       status_gestacao: "ativa" | "encerrada"
-      tipo_documento:
-        | "laudo_usg"
-        | "exame_lab"
-        | "receita"
-        | "atestado"
-        | "outro"
+      tipo_documento: "laudo_usg" | "exame_lab" | "receita" | "atestado" | "outro"
       tipo_gestacao: "unica" | "gemelar"
       tipo_sanguineo: "A" | "B" | "AB" | "O"
       vacina: "dtpa" | "influenza" | "hepatite_b" | "covid_19"
@@ -2002,25 +1898,21 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -2029,16 +1921,13 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
@@ -2054,16 +1943,13 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
@@ -2079,16 +1965,13 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -2096,16 +1979,13 @@ export type Enums<
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
@@ -2153,13 +2033,7 @@ export const Constants = {
       ],
       dpp_origem: ["dum", "usg"],
       fator_rh: ["positivo", "negativo"],
-      grau_edema: [
-        "ausente",
-        "uma_cruz",
-        "duas_cruzes",
-        "tres_cruzes",
-        "quatro_cruzes",
-      ],
+      grau_edema: ["ausente", "uma_cruz", "duas_cruzes", "tres_cruzes", "quatro_cruzes"],
       intercorrencia_obstetrica: [
         "pre_eclampsia",
         "eclampsia",
@@ -2176,26 +2050,14 @@ export const Constants = {
       papel_vinculo: ["obstetra", "medicina_fetal"],
       resultado_qualitativo: ["negativo", "positivo", "indeterminado"],
       situacao_vacina: ["aplicada", "recusada", "contraindicada", "dispensada"],
-      status_checklist: [
-        "pendente",
-        "solicitado",
-        "realizado",
-        "nao_aplicavel",
-      ],
+      status_checklist: ["pendente", "solicitado", "realizado", "nao_aplicavel"],
       status_consulta: ["agendada", "realizada", "cancelada", "faltou"],
       status_evolucao: ["rascunho", "assinada"],
       status_gestacao: ["ativa", "encerrada"],
-      tipo_documento: [
-        "laudo_usg",
-        "exame_lab",
-        "receita",
-        "atestado",
-        "outro",
-      ],
+      tipo_documento: ["laudo_usg", "exame_lab", "receita", "atestado", "outro"],
       tipo_gestacao: ["unica", "gemelar"],
       tipo_sanguineo: ["A", "B", "AB", "O"],
       vacina: ["dtpa", "influenza", "hepatite_b", "covid_19"],
     },
   },
 } as const
-

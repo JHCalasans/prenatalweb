@@ -44,6 +44,9 @@ describe('ExamesService', () => {
       rotulo_negativo: null,
       rotulo_positivo: null,
       obrigatorio: true,
+      ordem_tipo: 1,
+      ordem_componente: 1,
+      positivo_alterado: true,
     };
     const cliente = clienteFalso({
       data: [
@@ -62,11 +65,13 @@ describe('ExamesService', () => {
           tipo_nome: 'Hemograma',
           componente: 'ht',
           componente_nome: 'Hematócrito',
+          ordem_componente: 2,
         },
         {
           ...base,
           tipo_exame: 'vdrl',
           tipo_nome: 'VDRL',
+          ordem_tipo: 2,
           componente: 'vdrl',
           componente_nome: 'VDRL',
           natureza: 'qualitativo',
@@ -79,14 +84,18 @@ describe('ExamesService', () => {
 
     const resultado = await service.catalogo();
 
-    expect(resultado.ok && resultado.valor.map((t) => [t.codigo, t.componentes.length])).toEqual([
-      ['hemograma', 2],
-      ['vdrl', 1],
+    expect(
+      resultado.ok && resultado.valor.map((t) => [t.codigo, t.ordem, t.componentes.length]),
+    ).toEqual([
+      ['hemograma', 1, 2],
+      ['vdrl', 2, 1],
     ]);
     expect(resultado.ok && resultado.valor[0]!.componentes[0]).toMatchObject({
       codigo: 'hb',
       refMin: 11,
       refMax: null,
+      ordem: 1,
+      positivoAlterado: true,
     });
   });
 

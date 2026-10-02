@@ -7,6 +7,7 @@ const CATALOGO: TipoExameCatalogo[] = [
   {
     codigo: 'hemograma',
     nome: 'Hemograma',
+    ordem: 1,
     componentes: [
       {
         codigo: 'hb',
@@ -17,13 +18,16 @@ const CATALOGO: TipoExameCatalogo[] = [
         refMax: null,
         rotuloNegativo: null,
         rotuloPositivo: null,
+        positivoAlterado: true,
         obrigatorio: true,
+        ordem: 1,
       },
     ],
   },
   {
     codigo: 'vdrl',
     nome: 'VDRL',
+    ordem: 2,
     componentes: [
       {
         codigo: 'vdrl',
@@ -34,7 +38,9 @@ const CATALOGO: TipoExameCatalogo[] = [
         refMax: null,
         rotuloNegativo: 'Não reagente',
         rotuloPositivo: 'Reagente',
+        positivoAlterado: true,
         obrigatorio: true,
+        ordem: 1,
       },
     ],
   },

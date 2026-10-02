@@ -45,11 +45,12 @@ describe('Shell', () => {
     expect(rotas(montar('secretaria'))).toEqual(['/inicio', '/agenda', '/pacientes', '/convites']);
   });
 
-  it('menu do admin traz Início, Convites, Equipe, Auditoria e Relatórios', () => {
+  it('menu do admin traz Início, Convites, Equipe, Catálogo de exames, Auditoria e Relatórios', () => {
     expect(rotas(montar('admin'))).toEqual([
       '/inicio',
       '/convites',
       '/equipe',
+      '/catalogo',
       '/auditoria',
       '/relatorios',
     ]);
