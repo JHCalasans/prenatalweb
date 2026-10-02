@@ -59,4 +59,16 @@ describe('guards de autenticação', () => {
     const guard = papelGuard('secretaria');
     expect(TestBed.runInInjectionContext(() => guard(rota, estado))).toBeInstanceOf(UrlTree);
   });
+
+  it('papelGuard de equipe libera o admin', () => {
+    configurar(true, 'admin');
+    const guard = papelGuard('admin');
+    expect(TestBed.runInInjectionContext(() => guard(rota, estado))).toBe(true);
+  });
+
+  it('papelGuard de equipe barra a secretaria', () => {
+    configurar(true, 'secretaria');
+    const guard = papelGuard('admin');
+    expect(TestBed.runInInjectionContext(() => guard(rota, estado))).toBeInstanceOf(UrlTree);
+  });
 });

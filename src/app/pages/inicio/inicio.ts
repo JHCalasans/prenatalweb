@@ -45,6 +45,7 @@ export class Inicio implements OnInit {
     return papel === null ? '' : rotuloPapel(papel);
   });
   protected readonly ehMedica = computed(() => this.auth.papel() === 'medica');
+  protected readonly ehAdmin = computed(() => this.auth.papel() === 'admin');
 
   protected readonly pacientes = signal<PacienteMesa[]>([]);
   protected readonly consultas = signal<ConsultaAgenda[]>([]);
@@ -122,8 +123,9 @@ export class Inicio implements OnInit {
       const [painel, agenda] = await Promise.all([
         this.ehMedica() ? this.mesa.listar() : null,
         // Sem filtro de médica: a RPC restringe à própria agenda quando médica e
-        // devolve a clínica inteira para a secretaria.
-        this.agenda.listar(inicioDoDia, fimDoDia, null),
+        // devolve a clínica inteira para a secretaria. O admin não tem agenda:
+        // a RPC o rejeita no gate, então a chamada nem acontece.
+        this.ehAdmin() ? null : this.agenda.listar(inicioDoDia, fimDoDia, null),
       ]);
 
       // Um bloco que falha não derruba o outro.
@@ -135,11 +137,13 @@ export class Inicio implements OnInit {
           this.pacientes.set([]);
         }
       }
-      if (agenda.ok) {
-        this.consultas.set(agenda.valor);
-      } else {
-        this.erroAgenda.set(agenda.mensagem);
-        this.consultas.set([]);
+      if (agenda !== null) {
+        if (agenda.ok) {
+          this.consultas.set(agenda.valor);
+        } else {
+          this.erroAgenda.set(agenda.mensagem);
+          this.consultas.set([]);
+        }
       }
     } finally {
       this.carregando.set(false);

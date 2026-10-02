@@ -71,7 +71,7 @@
       />
     }
 
-    @if (atual().porMedica && ehSecretaria()) {
+    @if (atual().porMedica && ehAdmin()) {
       <p-select
         formControlName="medicaId"
         [options]="medicaOpcoes()"

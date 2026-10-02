@@ -2,44 +2,10 @@
   <aside class="barra">
     <p class="marca">Pré-Natal</p>
     <nav>
-      <a routerLink="/inicio" routerLinkActive="ativo">
-        <i class="pi pi-home" aria-hidden="true"></i>
-        <span>Início</span>
-      </a>
-      <a routerLink="/agenda" routerLinkActive="ativo">
-        <i class="pi pi-calendar" aria-hidden="true"></i>
-        <span>Agenda</span>
-      </a>
-      <a routerLink="/relatorios" routerLinkActive="ativo">
-        <i class="pi pi-chart-bar" aria-hidden="true"></i>
-        <span>Relatórios</span>
-      </a>
-      @if (papel() === 'secretaria') {
-        <a routerLink="/pacientes" routerLinkActive="ativo">
-          <i class="pi pi-users" aria-hidden="true"></i>
-          <span>Pacientes</span>
-        </a>
-        <a routerLink="/convites" routerLinkActive="ativo">
-          <i class="pi pi-send" aria-hidden="true"></i>
-          <span>Convites</span>
-        </a>
-        <a routerLink="/equipe" routerLinkActive="ativo">
-          <i class="pi pi-id-card" aria-hidden="true"></i>
-          <span>Equipe</span>
-        </a>
-      }
-      @if (papel() === 'medica') {
-        <a routerLink="/mesa" routerLinkActive="ativo">
-          <i class="pi pi-users" aria-hidden="true"></i>
-          <span>Minhas pacientes</span>
-        </a>
-        <a routerLink="/protocolo" routerLinkActive="ativo">
-          <i class="pi pi-list-check" aria-hidden="true"></i>
-          <span>Protocolo</span>
-        </a>
-        <a routerLink="/auditoria" routerLinkActive="ativo">
-          <i class="pi pi-history" aria-hidden="true"></i>
-          <span>Auditoria</span>
+      @for (item of itens(); track item.rota) {
+        <a [routerLink]="item.rota" routerLinkActive="ativo">
+          <i class="pi {{ item.icone }}" aria-hidden="true"></i>
+          <span>{{ item.rotulo }}</span>
         </a>
       }
     </nav>

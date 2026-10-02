@@ -27,7 +27,7 @@ export const routes: Routes = [
       },
       {
         path: 'relatorios',
-        canActivate: [papelGuard('secretaria', 'medica')],
+        canActivate: [papelGuard('medica', 'admin')],
         loadComponent: () => import('./pages/relatorios/relatorios').then((m) => m.Relatorios),
       },
       {
@@ -57,13 +57,13 @@ export const routes: Routes = [
       },
       {
         path: 'convites',
-        canActivate: [papelGuard('secretaria')],
+        canActivate: [papelGuard('secretaria', 'admin')],
         loadComponent: () =>
           import('./pages/convites/lista/convites-lista').then((m) => m.ConvitesLista),
       },
       {
         path: 'equipe',
-        canActivate: [papelGuard('secretaria')],
+        canActivate: [papelGuard('admin')],
         loadComponent: () => import('./pages/equipe/lista/equipe-lista').then((m) => m.EquipeLista),
       },
       {
@@ -74,7 +74,7 @@ export const routes: Routes = [
       },
       {
         path: 'auditoria',
-        canActivate: [papelGuard('medica')],
+        canActivate: [papelGuard('medica', 'admin')],
         loadComponent: () =>
           import('./pages/auditoria/lista/auditoria-lista').then((m) => m.AuditoriaLista),
       },
@@ -85,6 +85,12 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () => import('./pages/mesa/lista/mesa-lista').then((m) => m.MesaLista),
+          },
+          {
+            // Antes de :pacienteId, senão "nova" vira id de paciente.
+            path: 'nova',
+            loadComponent: () =>
+              import('./pages/mesa/nova/mesa-nova-paciente').then((m) => m.MesaNovaPaciente),
           },
           {
             path: ':pacienteId',

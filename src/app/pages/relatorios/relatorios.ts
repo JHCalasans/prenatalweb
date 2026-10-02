@@ -130,7 +130,7 @@ const RELATORIOS: readonly Relatorio[] = [
   definir<Falta>({
     chave: 'faltas',
     rotulo: 'Faltas',
-    papeis: ['medica', 'secretaria'],
+    papeis: ['medica', 'admin'],
     periodo: true,
     porMedica: true,
     carregar: (s, f) => s.faltas(f.desde, f.ate, f.medicaId),
@@ -163,7 +163,7 @@ const RELATORIOS: readonly Relatorio[] = [
   definir<ConvitePendente>({
     chave: 'convites',
     rotulo: 'Convites pendentes',
-    papeis: ['medica', 'secretaria'],
+    papeis: ['medica', 'admin'],
     rotuloAmpliar: 'Incluir expirados',
     carregar: (s, f) => s.convitesPendentes(f.ampliar),
     colunas: [
@@ -224,7 +224,7 @@ export class Relatorios implements OnInit {
     ampliar: [false],
   });
 
-  protected readonly ehSecretaria = computed(() => this.auth.papel() === 'secretaria');
+  protected readonly ehAdmin = computed(() => this.auth.papel() === 'admin');
 
   protected readonly disponiveis = computed(() => {
     const papel = this.auth.papel();
@@ -254,7 +254,7 @@ export class Relatorios implements OnInit {
       this.chave.set(primeiro.chave);
       this.formulario.controls.relatorio.setValue(primeiro.chave);
     }
-    if (this.ehSecretaria()) {
+    if (this.ehAdmin()) {
       void this.carregarMedicas();
     }
     this.ajustarCampos();
@@ -304,7 +304,7 @@ export class Relatorios implements OnInit {
         desde: bruto.desde.toISOString(),
         ate: this.diaSeguinte(bruto.ate).toISOString(),
         tipo: bruto.tipo,
-        medicaId: this.ehSecretaria() ? bruto.medicaId : null,
+        medicaId: this.ehAdmin() ? bruto.medicaId : null,
         ampliar: bruto.ampliar,
       });
       if (!resultado.ok) {

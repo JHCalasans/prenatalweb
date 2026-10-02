@@ -83,6 +83,25 @@
         <a routerLink="/agenda" class="rodape">Agenda completa</a>
       </section>
     </div>
+  } @else if (ehAdmin()) {
+    <section class="cartao-vidro cartao" aria-label="Atalhos administrativos">
+      <h2>Administração</h2>
+      <p class="subtitulo">Contas da equipe, convites, rastro de ações e relatórios da clínica.</p>
+      <nav class="atalhos" aria-label="Atalhos administrativos">
+        <a class="chip" routerLink="/equipe"
+          ><i class="pi pi-id-card" aria-hidden="true"></i>Equipe</a
+        >
+        <a class="chip" routerLink="/convites"
+          ><i class="pi pi-send" aria-hidden="true"></i>Convites</a
+        >
+        <a class="chip" routerLink="/auditoria"
+          ><i class="pi pi-history" aria-hidden="true"></i>Auditoria</a
+        >
+        <a class="chip" routerLink="/relatorios"
+          ><i class="pi pi-chart-bar" aria-hidden="true"></i>Relatórios</a
+        >
+      </nav>
+    </section>
   } @else {
     <section class="cartao-vidro cartao" aria-label="Consultas de hoje">
       <h2>Agenda de hoje</h2>

@@ -77,6 +77,19 @@ describe('AuthService', () => {
     expect(auth.papel()).toBe('secretaria');
   });
 
+  it('autentica uma administração', async () => {
+    const cliente = clienteFalso({
+      sessao,
+      perfil: { id: 'u1', nome: 'Ada', papel: 'admin' },
+    });
+    const auth = criar(cliente);
+
+    const resultado = await auth.entrar('ada@clinica.com', 'segredo');
+
+    expect(resultado.ok).toBe(true);
+    expect(auth.papel()).toBe('admin');
+  });
+
   it('recusa paciente e descarta a sessão', async () => {
     const cliente = clienteFalso({
       sessao,

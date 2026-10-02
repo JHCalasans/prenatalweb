@@ -37,9 +37,14 @@ interface Interno {
   trocar(): void;
   colunas(): readonly { rotulo: string }[];
   opcoesRelatorio(): readonly { valor: ChaveRelatorio }[];
+  medicaOpcoes(): readonly { rotulo: string }[];
 }
 
-function montar(papel: PapelEquipe, servico: Partial<Record<keyof RelatoriosService, unknown>>) {
+function montar(
+  papel: PapelEquipe,
+  servico: Partial<Record<keyof RelatoriosService, unknown>>,
+  listarMedicas: ReturnType<typeof vi.fn> = vi.fn().mockResolvedValue({ ok: true, valor: [] }),
+) {
   TestBed.configureTestingModule({
     imports: [Relatorios],
     providers: [
@@ -54,10 +59,7 @@ function montar(papel: PapelEquipe, servico: Partial<Record<keyof RelatoriosServ
           ...servico,
         },
       },
-      {
-        provide: PacientesService,
-        useValue: { listarMedicas: vi.fn().mockResolvedValue({ ok: true, valor: [] }) },
-      },
+      { provide: PacientesService, useValue: { listarMedicas } },
       { provide: AuthService, useValue: { papel: signal(papel) } },
     ],
   });
@@ -69,8 +71,16 @@ function interno(fixture: ReturnType<typeof montar>): Interno {
 }
 
 describe('Relatorios', () => {
-  it('a secretaria só enxerga os relatórios operacionais', async () => {
+  it('a secretaria perdeu os relatórios na W10', async () => {
     const fixture = montar('secretaria', {});
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(interno(fixture).opcoesRelatorio()).toEqual([]);
+  });
+
+  it('o admin enxerga só faltas e convites pendentes', async () => {
+    const fixture = montar('admin', {});
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -81,10 +91,27 @@ describe('Relatorios', () => {
     ).toEqual(['faltas', 'convites']);
   });
 
+  it('o admin carrega a lista de médicas para o filtro de faltas', async () => {
+    const listarMedicas = vi
+      .fn()
+      .mockResolvedValue({ ok: true, valor: [{ id: 'm1', nome: 'Dra Ana' }] });
+    const fixture = montar('admin', {}, listarMedicas);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(listarMedicas).toHaveBeenCalled();
+    expect(
+      interno(fixture)
+        .medicaOpcoes()
+        .map((o) => o.rotulo),
+    ).toEqual(['Todas as médicas', 'Dra Ana']);
+  });
+
   it('a médica enxerga os quatro e abre no primeiro deles', async () => {
     const faltas = vi.fn().mockResolvedValue({ ok: true, valor: [] });
     const documentosPublicados = vi.fn().mockResolvedValue({ ok: true, valor: [documento] });
-    const fixture = montar('medica', { documentosPublicados, faltas });
+    const listarMedicas = vi.fn();
+    const fixture = montar('medica', { documentosPublicados, faltas }, listarMedicas);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -95,6 +122,7 @@ describe('Relatorios', () => {
     ).toEqual(['documentos', 'faltas', 'checklist', 'convites']);
     expect(documentosPublicados).toHaveBeenCalled();
     expect(faltas).not.toHaveBeenCalled();
+    expect(listarMedicas).not.toHaveBeenCalled();
   });
 
   it('renderiza a linha com Sim/Não e travessão no que é nulo', async () => {

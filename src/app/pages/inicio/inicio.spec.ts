@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AgendaService, ConsultaAgenda } from '../../core/agenda/agenda.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { PapelEquipe } from '../../core/auth/papel';
 import { MesaService, PacienteMesa } from '../../core/mesa/mesa.service';
 import { Inicio } from './inicio';
 
@@ -80,7 +81,7 @@ function consulta(overrides: Partial<ConsultaAgenda>): ConsultaAgenda {
 function montar(
   painel: ReturnType<typeof vi.fn>,
   agenda: ReturnType<typeof vi.fn> = vi.fn().mockResolvedValue({ ok: true, valor: [] }),
-  papel: 'medica' | 'secretaria' = 'medica',
+  papel: PapelEquipe = 'medica',
 ) {
   TestBed.configureTestingModule({
     imports: [Inicio],
@@ -239,5 +240,22 @@ describe('Inicio', () => {
     const elemento = fixture.nativeElement as HTMLElement;
     expect(elemento.querySelector('a[href*="/pacientes/p1"]')).not.toBeNull();
     expect(elemento.querySelector('a[href*="/mesa"]')).toBeNull();
+  });
+
+  it('admin não chama mesa nem agenda; vê os atalhos administrativos', async () => {
+    const painel = vi.fn();
+    const agenda = vi.fn();
+    const fixture = montar(painel, agenda, 'admin');
+    await estabilizar(fixture);
+
+    expect(painel).not.toHaveBeenCalled();
+    expect(agenda).not.toHaveBeenCalled();
+
+    const elemento = fixture.nativeElement as HTMLElement;
+    expect(elemento.querySelector('a[href="/equipe"]')).not.toBeNull();
+    expect(elemento.querySelector('a[href="/convites"]')).not.toBeNull();
+    expect(elemento.querySelector('a[href="/auditoria"]')).not.toBeNull();
+    expect(elemento.querySelector('a[href="/relatorios"]')).not.toBeNull();
+    expect(texto(fixture)).not.toContain('Agenda de hoje');
   });
 });

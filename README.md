@@ -62,15 +62,32 @@ de produção existir. O arquivo gerado está no `.gitignore`.
 
 ## Acesso
 
-O web é só para a equipe: papéis `medica` e `secretaria`. Contas com papel
-`paciente` são recusadas no login e têm a sessão descartada — gestantes usam o
-app `prenatalapp`.
+O web é só para a equipe: papéis `medica`, `secretaria` e `admin` (W10: o admin
+administra as contas em `/equipe` e lê auditoria e relatórios operacionais).
+Contas com papel `paciente` são recusadas no login e têm a sessão descartada —
+gestantes usam o app `prenatalapp`.
 
 Papel é atribuído pelo backend, nunca pelo cliente:
 
 - `select public.promover_para_medica('<uuid>', 'Nome');`
 - `select public.promover_para_secretaria('<uuid>', 'Nome');`
+- `select public.promover_para_admin('<uuid>', 'Nome');`
 
-Ambas exigem service role. Para criar uma conta de teste local, crie o usuário
+Todas exigem service role. Para criar uma conta de teste local, crie o usuário
 pelo Studio (`http://127.0.0.1:54323`) e rode a função correspondente no SQL
 editor.
+
+**Primeiro admin (runbook).** A tela `/equipe` só é acessível ao admin, e a
+Edge Function `gerir-equipe` só aceita admin como ator — então o primeiro admin
+não nasce pela tela. Promova-o uma única vez, por service role:
+
+1. Confira o alvo antes: `select nome, papel from profiles where id = '<uuid>';`
+   A promoção apaga a paciente associada ao uuid (`delete from pacientes` em
+   cascata sobre gestação, documentos e consultas) — nunca promova o uuid de
+   uma gestante.
+2. `select public.promover_para_admin('<uuid>', 'Nome');`
+3. Entre como o admin promovido e crie os demais admins, médicas e secretarias
+   em `/equipe`.
+
+Em produção, promova o primeiro admin **antes** de publicar a Edge Function
+nova: entre a publicação e a promoção, ninguém administra contas.
