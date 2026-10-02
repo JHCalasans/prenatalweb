@@ -8,6 +8,7 @@ import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { AuthService } from './core/auth/auth.service';
+import { traducaoPtBr } from './core/i18n/primeng-ptbr';
 import { AconchegoPreset } from './core/theme/aconchego.preset';
 
 export const appConfig: ApplicationConfig = {
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAppInitializer(() => inject(AuthService).inicializar()),
     providePrimeNG({
+      translation: traducaoPtBr,
       theme: {
         preset: AconchegoPreset,
         options: {
