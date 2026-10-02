@@ -159,7 +159,8 @@ de retenção da Fase 0 do mobile. `pacientes` e `gestacoes` já não têm delet
 
 - **W11** — Evolução de pré-natal: schema, RPCs, cenários no `supabase/tests/rls_smoke.sql`, tela
   no web e no mobile com rascunho local.
-- **W12** — Anamnese, antecedentes e classificação de risco gestacional.
+- **W12** — Anamnese, antecedentes e classificação de risco gestacional (entregue; ver
+  [ADR 0007](0007-anamnese-pela-secretaria.md) e [plano-w12-anamnese-risco.md](../plano-w12-anamnese-risco.md)).
 - **W13** — Exames estruturados e vacinas.
 - **W14** — Linha do tempo e curvas AU × IG e peso × IMC.
 - **W15** — Prescrição e atestado.

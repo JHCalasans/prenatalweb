@@ -1,0 +1,188 @@
+<form class="formulario" [formGroup]="form" (ngSubmit)="enviar()">
+  <fieldset>
+    <legend>Tipagem e alergias</legend>
+    <div class="grade">
+      <div class="campo">
+        <label for="tipoSanguineo">Tipo sanguíneo</label>
+        <p-select
+          inputId="tipoSanguineo"
+          formControlName="tipoSanguineo"
+          [options]="tipos"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+          [fluid]="true"
+          appendTo="body"
+        />
+      </div>
+      <div class="campo">
+        <label for="fatorRh">Fator Rh</label>
+        <p-select
+          inputId="fatorRh"
+          formControlName="fatorRh"
+          [options]="fatores"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+          [fluid]="true"
+          appendTo="body"
+        />
+      </div>
+    </div>
+    <div class="caixa">
+      <p-checkbox inputId="semAlergias" formControlName="semAlergiasConhecidas" [binary]="true" />
+      <label for="semAlergias">Sem alergias conhecidas</label>
+    </div>
+    <label for="alergias">Alergias</label>
+    <textarea id="alergias" pTextarea rows="2" formControlName="alergias"></textarea>
+    <label for="medicacoes">Medicações em uso</label>
+    <textarea id="medicacoes" pTextarea rows="2" formControlName="medicacoesEmUso"></textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>Antecedentes pessoais</legend>
+    <label for="comorbidades">Comorbidades</label>
+    <p-multiselect
+      inputId="comorbidades"
+      formControlName="comorbidades"
+      [options]="comorbidadeOpcoes"
+      optionLabel="rotulo"
+      optionValue="valor"
+      display="chip"
+      [fluid]="true"
+      appendTo="body"
+    />
+    <label for="comorbidadesOutras">Outras comorbidades</label>
+    <input id="comorbidadesOutras" type="text" pInputText formControlName="comorbidadesOutras" />
+    <label for="cirurgias">Cirurgias prévias</label>
+    <textarea id="cirurgias" pTextarea rows="2" formControlName="cirurgiasPrevias"></textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>Antecedentes obstétricos</legend>
+    <div class="grade">
+      <div class="campo">
+        <label for="gestacoes">Gestações anteriores</label>
+        <p-inputnumber
+          inputId="gestacoes"
+          formControlName="gestacoesAnteriores"
+          [min]="0"
+          [fluid]="true"
+        />
+      </div>
+      <div class="campo">
+        <label for="normais">Partos normais</label>
+        <p-inputnumber inputId="normais" formControlName="partosNormais" [min]="0" [fluid]="true" />
+      </div>
+      <div class="campo">
+        <label for="cesareas">Cesáreas</label>
+        <p-inputnumber inputId="cesareas" formControlName="cesareas" [min]="0" [fluid]="true" />
+      </div>
+      <div class="campo">
+        <label for="abortos">Abortos</label>
+        <p-inputnumber inputId="abortos" formControlName="abortos" [min]="0" [fluid]="true" />
+      </div>
+      <div class="campo">
+        <label for="natimortos">Natimortos</label>
+        <p-inputnumber inputId="natimortos" formControlName="natimortos" [min]="0" [fluid]="true" />
+      </div>
+      <div class="campo">
+        <label for="ultimoParto">Último parto</label>
+        <p-datepicker
+          inputId="ultimoParto"
+          formControlName="dataUltimoParto"
+          dateFormat="dd/mm/yy"
+          [maxDate]="hoje"
+          [showIcon]="true"
+          [fluid]="true"
+          appendTo="body"
+        />
+      </div>
+    </div>
+    <label for="intercorrencias">Intercorrências em gestações anteriores</label>
+    <p-multiselect
+      inputId="intercorrencias"
+      formControlName="intercorrenciasPrevias"
+      [options]="intercorrenciaOpcoes"
+      optionLabel="rotulo"
+      optionValue="valor"
+      display="chip"
+      [fluid]="true"
+      appendTo="body"
+    />
+    <label for="intercorrenciasOutras">Outras intercorrências</label>
+    <input
+      id="intercorrenciasOutras"
+      type="text"
+      pInputText
+      formControlName="intercorrenciasOutras"
+    />
+  </fieldset>
+
+  <fieldset>
+    <legend>Antecedentes familiares e hábitos</legend>
+    <label for="familiares">Antecedentes familiares</label>
+    <p-multiselect
+      inputId="familiares"
+      formControlName="antecedentesFamiliares"
+      [options]="familiarOpcoes"
+      optionLabel="rotulo"
+      optionValue="valor"
+      display="chip"
+      [fluid]="true"
+      appendTo="body"
+    />
+    <label for="familiaresOutros">Outros antecedentes familiares</label>
+    <input id="familiaresOutros" type="text" pInputText formControlName="familiaresOutros" />
+    <div class="grade">
+      <div class="campo">
+        <label for="tabagismo">Tabagismo</label>
+        <p-select
+          inputId="tabagismo"
+          formControlName="tabagismo"
+          [options]="consumoOpcoes"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+          [fluid]="true"
+          appendTo="body"
+        />
+      </div>
+      <div class="campo">
+        <label for="alcool">Álcool</label>
+        <p-select
+          inputId="alcool"
+          formControlName="alcool"
+          [options]="consumoOpcoes"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+          [fluid]="true"
+          appendTo="body"
+        />
+      </div>
+      <div class="campo">
+        <label for="drogas">Outras drogas</label>
+        <p-select
+          inputId="drogas"
+          formControlName="outrasDrogas"
+          [options]="consumoOpcoes"
+          optionLabel="rotulo"
+          optionValue="valor"
+          [showClear]="true"
+          [fluid]="true"
+          appendTo="body"
+        />
+      </div>
+    </div>
+  </fieldset>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  <div class="acoes">
+    <p-button label="Cancelar" severity="secondary" (onClick)="cancelar.emit()" />
+    <p-button type="submit" label="Salvar ficha" [loading]="salvando()" />
+  </div>
+</form>

@@ -22,6 +22,7 @@ import {
 import { formatarCpf } from '../../../core/formato/cpf';
 import { deDataIso, formatarData, formatarDataHora, paraDataIso } from '../../../core/formato/data';
 import { PacientesService } from '../../../core/pacientes/pacientes.service';
+import { CartaoAnamnese } from './cartao-anamnese';
 import { CartaoDocumentos } from './cartao-documentos';
 import { CartaoGestacoes } from './cartao-gestacoes';
 import { CartaoProntuario } from './cartao-prontuario';
@@ -55,6 +56,7 @@ const STATUS_ROTULO: Record<string, string> = {
 @Component({
   imports: [
     ButtonModule,
+    CartaoAnamnese,
     CartaoDocumentos,
     CartaoGestacoes,
     CartaoProntuario,

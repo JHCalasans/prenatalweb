@@ -1,0 +1,197 @@
+<section class="bloco">
+  <div class="topo">
+    <h2>Anamnese e risco</h2>
+    <div class="acoes">
+      <p-button
+        [label]="vigente() ? 'Editar anamnese' : 'Preencher anamnese'"
+        icon="pi pi-pencil"
+        severity="secondary"
+        [disabled]="carregando() || agindo()"
+        (onClick)="abrirEdicao()"
+      />
+      @if (gestacaoAtiva()) {
+        <p-button
+          label="Classificar risco"
+          icon="pi pi-flag"
+          [disabled]="carregando() || agindo()"
+          (onClick)="abrirClassificacao()"
+        />
+      }
+    </div>
+  </div>
+
+  @if (erro()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @if (!carregando()) {
+    <div class="alertas">
+      @if (vigente(); as a) {
+        @if (a.alergias) {
+          <p-tag severity="danger" [value]="'Alergias: ' + a.alergias" />
+        } @else if (!a.semAlergiasConhecidas) {
+          <p-tag severity="warn" value="Alergias não registradas" />
+        }
+        @if (a.fatorRh === 'negativo') {
+          <p-tag severity="warn" value="Rh negativo" />
+        }
+      } @else {
+        <p-tag severity="secondary" value="Ficha não preenchida" />
+      }
+      @if (riscoVigente(); as r) {
+        @if (r.classificacao === 'alto') {
+          <p-tag severity="danger" value="Alto risco" />
+        } @else {
+          <p-tag severity="success" value="Risco habitual" />
+        }
+      } @else {
+        <p-tag severity="secondary" value="Risco não classificado" />
+      }
+    </div>
+
+    @if (vigente(); as a) {
+      <dl class="resumo">
+        <dt>Tipagem</dt>
+        <dd>{{ formatarTipagem(a) ?? 'Não informada' }}</dd>
+        <dt>Obstétricos</dt>
+        <dd>{{ formatarGpa(a) }}</dd>
+        <dt>Comorbidades</dt>
+        <dd>{{ comorbidades(a) }}</dd>
+        <dt>Intercorrências prévias</dt>
+        <dd>{{ intercorrencias(a) }}</dd>
+        <dt>Medicações</dt>
+        <dd>{{ a.medicacoesEmUso ?? '—' }}</dd>
+      </dl>
+      <p class="dica">
+        Ficha atualizada por {{ a.autorNome }} ({{ rotuloPapel[a.papelAutor] }}) em
+        {{ formatarDataHora(a.registradaEm) }}
+        @if (historico().length > 1) {
+          ·
+          <button type="button" class="link" (click)="vendoHistorico.set(true)">
+            ver histórico
+          </button>
+        }
+      </p>
+    }
+
+    @if (riscoVigente(); as r) {
+      <p class="dica">
+        Risco classificado por {{ r.autoraNome }} em {{ formatarDataHora(r.registradoEm) }}
+        @if (r.motivo) {
+          — {{ r.motivo }}
+        }
+      </p>
+    }
+  }
+</section>
+
+<p-dialog
+  header="Anamnese"
+  [visible]="editando()"
+  (visibleChange)="editando.set(false)"
+  [modal]="true"
+  [focusOnShow]="false"
+  [style]="{ width: '48rem' }"
+>
+  @if (conflito()) {
+    <div class="conflito">
+      <p-message
+        severity="warn"
+        text="Outra pessoa atualizou a ficha. Recarregue para ver a versão atual antes de salvar."
+      />
+      <p-button label="Recarregar ficha" severity="secondary" (onClick)="recarregarFicha()" />
+    </div>
+  }
+  @if (erroDialogo() && editando()) {
+    <p-message severity="error" [text]="erroDialogo()!" />
+  }
+  <app-formulario-anamnese
+    [anamnese]="vigente()"
+    [salvando]="agindo()"
+    (salvar)="salvarAnamnese($event)"
+    (cancelar)="editando.set(false)"
+  />
+</p-dialog>
+
+<p-dialog
+  header="Classificar risco gestacional"
+  [visible]="classificando()"
+  (visibleChange)="classificando.set(false)"
+  [modal]="true"
+  [focusOnShow]="false"
+  [style]="{ width: '32rem' }"
+>
+  <p class="quem">Fatores sugeridos</p>
+  @if (fatores().length === 0) {
+    <p class="dica">Nenhum fator sugerido pela ficha e pela gestação.</p>
+  } @else {
+    <ul class="fatores">
+      @for (f of fatores(); track f.codigo) {
+        <li>{{ f.descricao }}</li>
+      }
+    </ul>
+  }
+
+  <div class="formulario">
+    <p-selectbutton
+      [options]="opcoesRisco"
+      optionLabel="rotulo"
+      optionValue="valor"
+      [allowEmpty]="false"
+      [ngModel]="classificacao()"
+      (ngModelChange)="classificacao.set($event)"
+    />
+    @if (avisoHabitual()) {
+      <p-message severity="warn" text="Há fatores sugeridos de alto risco." />
+    }
+    <label for="motivo">
+      Motivo{{ classificacao() === 'alto' ? ' (obrigatório, mínimo de 10 caracteres)' : '' }}
+    </label>
+    <textarea
+      id="motivo"
+      pTextarea
+      rows="2"
+      [ngModel]="motivo()"
+      (ngModelChange)="motivo.set($event)"
+    ></textarea>
+  </div>
+  @if (erroDialogo() && classificando()) {
+    <p-message severity="error" [text]="erroDialogo()!" />
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" (onClick)="classificando.set(false)" />
+    <p-button label="Salvar" [loading]="agindo()" (onClick)="confirmarClassificacao()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Histórico da anamnese"
+  [visible]="vendoHistorico()"
+  (visibleChange)="vendoHistorico.set(false)"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+>
+  <ul class="fatores">
+    @for (a of historico(); track a.id) {
+      <li>
+        <strong>Versão {{ a.versao }}</strong> · {{ formatarDataHora(a.registradaEm) }} ·
+        {{ a.autorNome }} ({{ rotuloPapel[a.papelAutor] }})
+      </li>
+    }
+  </ul>
+  @if (riscos().length > 1) {
+    <p class="quem">Classificações de risco</p>
+    <ul class="fatores">
+      @for (r of riscos(); track r.id) {
+        <li>
+          {{ formatarDataHora(r.registradoEm) }} ·
+          {{ r.classificacao === 'alto' ? 'Alto risco' : 'Habitual' }} · {{ r.autoraNome }}
+          @if (r.motivo) {
+            — {{ r.motivo }}
+          }
+        </li>
+      }
+    </ul>
+  }
+</p-dialog>

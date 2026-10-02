@@ -13,9 +13,12 @@ Amendado na W10 — a auditoria da clínica passa a ser lida por `medica` **e** 
 [ADR 0005](0005-perfil-admin.md)); os dois relatórios operacionais (`relatorio_faltas` e
 `relatorio_convites_pendentes`) saem da secretaria e passam para `medica` + `admin`
 (migration `20260902120100_perfil_admin.sql`).
-Amendado pelo [ADR 0006](0006-prontuario-obstetrico.md) (proposto) — o prontuário obstétrico
+Amendado na W11 pelo [ADR 0006](0006-prontuario-obstetrico.md) — o prontuário obstétrico
 segue a leitura clínica por vínculo ativo, a secretaria continua sem acesso e a gestante passa a
 ler só a projeção de medidas da caderneta, por RPC.
+Amendado na W12 pelo [ADR 0007](0007-anamnese-pela-secretaria.md) — segunda exceção da secretaria:
+ela lê e grava a anamnese de qualquer paciente da clínica, por RPC e com leitura auditada; a
+classificação de risco, a evolução, os laudos e o checklist continuam fora do seu alcance.
 
 ## Contexto
 

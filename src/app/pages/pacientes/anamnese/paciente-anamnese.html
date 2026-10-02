@@ -1,0 +1,96 @@
+<section class="painel">
+  <h2>
+    Anamnese
+    @if (vigente() === null && !carregando()) {
+      <p-tag value="Ficha não preenchida" severity="secondary" />
+    }
+  </h2>
+
+  @if (erro() && !editando()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+
+  @if (carregando()) {
+    <p class="apagado">Carregando…</p>
+  } @else {
+    @if (vigente(); as a) {
+      <dl class="resumo">
+        <dt>Tipagem</dt>
+        <dd>{{ formatarTipagem(a) ?? 'Não informada' }}</dd>
+        <dt>Alergias</dt>
+        <dd>
+          {{ a.semAlergiasConhecidas ? 'Nenhuma conhecida' : (a.alergias ?? 'Não informadas') }}
+        </dd>
+        <dt>Medicações</dt>
+        <dd>{{ a.medicacoesEmUso ?? '—' }}</dd>
+        <dt>Obstétricos</dt>
+        <dd>{{ formatarGpa(a) }}</dd>
+      </dl>
+      <p class="apagado">
+        Última atualização por {{ a.autorNome }} ({{ rotuloPapel[a.papelAutor] }}) em
+        {{ formatarDataHora(a.registradaEm) }}
+      </p>
+    }
+    <div class="acoes">
+      <p-button
+        [label]="vigente() ? 'Editar ficha' : 'Preencher ficha'"
+        icon="pi pi-pencil"
+        (onClick)="abrir()"
+      />
+      @if (historico().length > 1) {
+        <p-button
+          label="Ver histórico"
+          icon="pi pi-history"
+          severity="secondary"
+          [text]="true"
+          (onClick)="vendoHistorico.set(true)"
+        />
+      }
+    </div>
+  }
+</section>
+
+<p-dialog
+  header="Anamnese"
+  [visible]="editando()"
+  (visibleChange)="editando.set(false)"
+  [modal]="true"
+  [focusOnShow]="false"
+  [style]="{ width: '48rem' }"
+>
+  @if (conflito()) {
+    <div class="conflito">
+      <p-message
+        severity="warn"
+        text="Outra pessoa atualizou a ficha. Recarregue para ver a versão atual antes de salvar."
+      />
+      <p-button label="Recarregar ficha" severity="secondary" (onClick)="recarregar()" />
+    </div>
+  }
+  @if (erro() && editando()) {
+    <p-message severity="error" [text]="erro()!" />
+  }
+  <app-formulario-anamnese
+    [anamnese]="vigente()"
+    [salvando]="salvando()"
+    (salvar)="salvar($event)"
+    (cancelar)="editando.set(false)"
+  />
+</p-dialog>
+
+<p-dialog
+  header="Histórico da anamnese"
+  [visible]="vendoHistorico()"
+  (visibleChange)="vendoHistorico.set(false)"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+>
+  <ul class="historico">
+    @for (a of historico(); track a.id) {
+      <li>
+        <strong>Versão {{ a.versao }}</strong> · {{ formatarDataHora(a.registradaEm) }} ·
+        {{ a.autorNome }} ({{ rotuloPapel[a.papelAutor] }})
+      </li>
+    }
+  </ul>
+</p-dialog>

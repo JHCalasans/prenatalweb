@@ -34,6 +34,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      anamneses: {
+        Row: {
+          abortos: number
+          alcool: Database["public"]["Enums"]["consumo"] | null
+          alergias: string | null
+          antecedentes_familiares: Database["public"]["Enums"]["antecedente_familiar"][]
+          autor_id: string
+          cesareas: number
+          cirurgias_previas: string | null
+          comorbidades: Database["public"]["Enums"]["comorbidade"][]
+          comorbidades_outras: string | null
+          data_ultimo_parto: string | null
+          familiares_outros: string | null
+          fator_rh: Database["public"]["Enums"]["fator_rh"] | null
+          gestacoes_anteriores: number
+          id: string
+          intercorrencias_outras: string | null
+          intercorrencias_previas: Database["public"]["Enums"]["intercorrencia_obstetrica"][]
+          medicacoes_em_uso: string | null
+          natimortos: number
+          outras_drogas: Database["public"]["Enums"]["consumo"] | null
+          paciente_id: string
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          partos_normais: number
+          registrada_em: string
+          sem_alergias_conhecidas: boolean
+          tabagismo: Database["public"]["Enums"]["consumo"] | null
+          tipo_sanguineo: Database["public"]["Enums"]["tipo_sanguineo"] | null
+          versao: number
+        }
+        Insert: {
+          abortos?: number
+          alcool?: Database["public"]["Enums"]["consumo"] | null
+          alergias?: string | null
+          antecedentes_familiares?: Database["public"]["Enums"]["antecedente_familiar"][]
+          autor_id: string
+          cesareas?: number
+          cirurgias_previas?: string | null
+          comorbidades?: Database["public"]["Enums"]["comorbidade"][]
+          comorbidades_outras?: string | null
+          data_ultimo_parto?: string | null
+          familiares_outros?: string | null
+          fator_rh?: Database["public"]["Enums"]["fator_rh"] | null
+          gestacoes_anteriores?: number
+          id?: string
+          intercorrencias_outras?: string | null
+          intercorrencias_previas?: Database["public"]["Enums"]["intercorrencia_obstetrica"][]
+          medicacoes_em_uso?: string | null
+          natimortos?: number
+          outras_drogas?: Database["public"]["Enums"]["consumo"] | null
+          paciente_id: string
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          partos_normais?: number
+          registrada_em?: string
+          sem_alergias_conhecidas?: boolean
+          tabagismo?: Database["public"]["Enums"]["consumo"] | null
+          tipo_sanguineo?: Database["public"]["Enums"]["tipo_sanguineo"] | null
+          versao: number
+        }
+        Update: {
+          abortos?: number
+          alcool?: Database["public"]["Enums"]["consumo"] | null
+          alergias?: string | null
+          antecedentes_familiares?: Database["public"]["Enums"]["antecedente_familiar"][]
+          autor_id?: string
+          cesareas?: number
+          cirurgias_previas?: string | null
+          comorbidades?: Database["public"]["Enums"]["comorbidade"][]
+          comorbidades_outras?: string | null
+          data_ultimo_parto?: string | null
+          familiares_outros?: string | null
+          fator_rh?: Database["public"]["Enums"]["fator_rh"] | null
+          gestacoes_anteriores?: number
+          id?: string
+          intercorrencias_outras?: string | null
+          intercorrencias_previas?: Database["public"]["Enums"]["intercorrencia_obstetrica"][]
+          medicacoes_em_uso?: string | null
+          natimortos?: number
+          outras_drogas?: Database["public"]["Enums"]["consumo"] | null
+          paciente_id?: string
+          papel_autor?: Database["public"]["Enums"]["papel_usuario"]
+          partos_normais?: number
+          registrada_em?: string
+          sem_alergias_conhecidas?: boolean
+          tabagismo?: Database["public"]["Enums"]["consumo"] | null
+          tipo_sanguineo?: Database["public"]["Enums"]["tipo_sanguineo"] | null
+          versao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamneses_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anamneses_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           acao: string
@@ -591,6 +696,51 @@ export type Database = {
           },
         ]
       }
+      riscos_gestacionais: {
+        Row: {
+          autora_id: string
+          classificacao: Database["public"]["Enums"]["classificacao_risco"]
+          fatores_sugeridos: string[]
+          gestacao_id: string
+          id: string
+          motivo: string | null
+          registrado_em: string
+        }
+        Insert: {
+          autora_id: string
+          classificacao: Database["public"]["Enums"]["classificacao_risco"]
+          fatores_sugeridos: string[]
+          gestacao_id: string
+          id?: string
+          motivo?: string | null
+          registrado_em?: string
+        }
+        Update: {
+          autora_id?: string
+          classificacao?: Database["public"]["Enums"]["classificacao_risco"]
+          fatores_sugeridos?: string[]
+          gestacao_id?: string
+          id?: string
+          motivo?: string | null
+          registrado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "riscos_gestacionais_autora_id_fkey"
+            columns: ["autora_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "riscos_gestacionais_gestacao_id_fkey"
+            columns: ["gestacao_id"]
+            isOneToOne: false
+            referencedRelation: "gestacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vinculos: {
         Row: {
           ativo: boolean
@@ -712,6 +862,38 @@ export type Database = {
           p_tipo?: string
         }
         Returns: string
+      }
+      anamnese_da_paciente: {
+        Args: { p_paciente_id: string }
+        Returns: {
+          abortos: number
+          alcool: Database["public"]["Enums"]["consumo"]
+          alergias: string
+          antecedentes_familiares: Database["public"]["Enums"]["antecedente_familiar"][]
+          autor_id: string
+          autor_nome: string
+          cesareas: number
+          cirurgias_previas: string
+          comorbidades: Database["public"]["Enums"]["comorbidade"][]
+          comorbidades_outras: string
+          data_ultimo_parto: string
+          familiares_outros: string
+          fator_rh: Database["public"]["Enums"]["fator_rh"]
+          gestacoes_anteriores: number
+          id: string
+          intercorrencias_outras: string
+          intercorrencias_previas: Database["public"]["Enums"]["intercorrencia_obstetrica"][]
+          medicacoes_em_uso: string
+          natimortos: number
+          outras_drogas: Database["public"]["Enums"]["consumo"]
+          papel_autor: Database["public"]["Enums"]["papel_usuario"]
+          partos_normais: number
+          registrada_em: string
+          sem_alergias_conhecidas: boolean
+          tabagismo: Database["public"]["Enums"]["consumo"]
+          tipo_sanguineo: Database["public"]["Enums"]["tipo_sanguineo"]
+          versao: number
+        }[]
       }
       aposentar_protocolo_item: {
         Args: { p_item_id: string }
@@ -923,6 +1105,13 @@ export type Database = {
         Returns: undefined
       }
       excluir_rascunho_evolucao: { Args: { p_id: string }; Returns: undefined }
+      fatores_risco_sugeridos: {
+        Args: { p_gestacao_id: string }
+        Returns: {
+          codigo: string
+          descricao: string
+        }[]
+      }
       gerar_codigo_convite: { Args: never; Returns: string }
       gestacao_ativa_da_paciente: {
         Args: { p_paciente_id: string }
@@ -1005,6 +1194,15 @@ export type Database = {
           peso_kg: number
         }[]
       }
+      minha_ficha_essencial: {
+        Args: never
+        Returns: {
+          alergias: string
+          fator_rh: Database["public"]["Enums"]["fator_rh"]
+          sem_alergias_conhecidas: boolean
+          tipo_sanguineo: Database["public"]["Enums"]["tipo_sanguineo"]
+        }[]
+      }
       paciente_dona_da_gestacao: {
         Args: { p_gestacao_id: string }
         Returns: boolean
@@ -1044,6 +1242,10 @@ export type Database = {
           trimestre: number
           urgencia_score: number
         }[]
+      }
+      pode_acessar_anamnese: {
+        Args: { p_paciente_id: string }
+        Returns: boolean
       }
       promover_para_admin: {
         Args: { p_nome?: string; p_user_id: string }
@@ -1121,8 +1323,44 @@ export type Database = {
         Returns: undefined
       }
       reemitir_convite: { Args: { p_paciente_id: string }; Returns: string }
+      registrar_anamnese: {
+        Args: {
+          p_abortos?: number
+          p_alcool?: Database["public"]["Enums"]["consumo"]
+          p_alergias?: string
+          p_antecedentes_familiares?: Database["public"]["Enums"]["antecedente_familiar"][]
+          p_cesareas?: number
+          p_cirurgias_previas?: string
+          p_comorbidades?: Database["public"]["Enums"]["comorbidade"][]
+          p_comorbidades_outras?: string
+          p_data_ultimo_parto?: string
+          p_familiares_outros?: string
+          p_fator_rh?: Database["public"]["Enums"]["fator_rh"]
+          p_gestacoes_anteriores?: number
+          p_intercorrencias_outras?: string
+          p_intercorrencias_previas?: Database["public"]["Enums"]["intercorrencia_obstetrica"][]
+          p_medicacoes_em_uso?: string
+          p_natimortos?: number
+          p_outras_drogas?: Database["public"]["Enums"]["consumo"]
+          p_paciente_id: string
+          p_partos_normais?: number
+          p_sem_alergias_conhecidas?: boolean
+          p_tabagismo?: Database["public"]["Enums"]["consumo"]
+          p_tipo_sanguineo?: Database["public"]["Enums"]["tipo_sanguineo"]
+          p_versao_base: number
+        }
+        Returns: number
+      }
       registrar_ativacao_convite: {
         Args: { p_codigo_hash: string }
+        Returns: string
+      }
+      registrar_risco_gestacional: {
+        Args: {
+          p_classificacao: Database["public"]["Enums"]["classificacao_risco"]
+          p_gestacao_id: string
+          p_motivo?: string
+        }
         Returns: string
       }
       relatorio_checklist_vencidos: {
@@ -1192,6 +1430,18 @@ export type Database = {
         Args: { p_paciente_id: string }
         Returns: number
       }
+      riscos_da_gestacao: {
+        Args: { p_gestacao_id: string }
+        Returns: {
+          autora_id: string
+          autora_nome: string
+          classificacao: Database["public"]["Enums"]["classificacao_risco"]
+          fatores_sugeridos: string[]
+          id: string
+          motivo: string
+          registrado_em: string
+        }[]
+      }
       salvar_rascunho_evolucao: {
         Args: {
           p_altura_uterina_cm?: number
@@ -1260,7 +1510,30 @@ export type Database = {
       }
     }
     Enums: {
+      antecedente_familiar:
+        | "hipertensao"
+        | "diabetes"
+        | "gemelaridade"
+        | "malformacao"
+        | "trombofilia"
+        | "cancer_mama_ovario"
       apresentacao_fetal: "cefalica" | "pelvica" | "transversa" | "indefinida"
+      classificacao_risco: "habitual" | "alto"
+      comorbidade:
+        | "hipertensao_cronica"
+        | "diabetes_previo"
+        | "hipotireoidismo"
+        | "hipertireoidismo"
+        | "epilepsia"
+        | "cardiopatia"
+        | "doenca_renal"
+        | "doenca_autoimune"
+        | "trombofilia"
+        | "hiv"
+        | "anemia_falciforme"
+        | "asma"
+        | "transtorno_mental"
+      consumo: "nunca" | "parou" | "atual"
       desfecho_gestacao:
         | "parto_normal"
         | "cesarea"
@@ -1269,12 +1542,22 @@ export type Database = {
         | "transferencia_cuidado"
         | "outro"
       dpp_origem: "dum" | "usg"
+      fator_rh: "positivo" | "negativo"
       grau_edema:
         | "ausente"
         | "uma_cruz"
         | "duas_cruzes"
         | "tres_cruzes"
         | "quatro_cruzes"
+      intercorrencia_obstetrica:
+        | "pre_eclampsia"
+        | "eclampsia"
+        | "diabetes_gestacional"
+        | "parto_prematuro"
+        | "restricao_crescimento"
+        | "hemorragia_pos_parto"
+        | "descolamento_placenta"
+        | "isoimunizacao_rh"
       movimentacao_fetal: "presente" | "diminuida" | "ausente"
       papel_usuario: "paciente" | "medica" | "secretaria" | "admin"
       papel_vinculo: "obstetra" | "medicina_fetal"
@@ -1293,6 +1576,7 @@ export type Database = {
         | "atestado"
         | "outro"
       tipo_gestacao: "unica" | "gemelar"
+      tipo_sanguineo: "A" | "B" | "AB" | "O"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1423,7 +1707,32 @@ export const Constants = {
   },
   public: {
     Enums: {
+      antecedente_familiar: [
+        "hipertensao",
+        "diabetes",
+        "gemelaridade",
+        "malformacao",
+        "trombofilia",
+        "cancer_mama_ovario",
+      ],
       apresentacao_fetal: ["cefalica", "pelvica", "transversa", "indefinida"],
+      classificacao_risco: ["habitual", "alto"],
+      comorbidade: [
+        "hipertensao_cronica",
+        "diabetes_previo",
+        "hipotireoidismo",
+        "hipertireoidismo",
+        "epilepsia",
+        "cardiopatia",
+        "doenca_renal",
+        "doenca_autoimune",
+        "trombofilia",
+        "hiv",
+        "anemia_falciforme",
+        "asma",
+        "transtorno_mental",
+      ],
+      consumo: ["nunca", "parou", "atual"],
       desfecho_gestacao: [
         "parto_normal",
         "cesarea",
@@ -1433,12 +1742,23 @@ export const Constants = {
         "outro",
       ],
       dpp_origem: ["dum", "usg"],
+      fator_rh: ["positivo", "negativo"],
       grau_edema: [
         "ausente",
         "uma_cruz",
         "duas_cruzes",
         "tres_cruzes",
         "quatro_cruzes",
+      ],
+      intercorrencia_obstetrica: [
+        "pre_eclampsia",
+        "eclampsia",
+        "diabetes_gestacional",
+        "parto_prematuro",
+        "restricao_crescimento",
+        "hemorragia_pos_parto",
+        "descolamento_placenta",
+        "isoimunizacao_rh",
       ],
       movimentacao_fetal: ["presente", "diminuida", "ausente"],
       papel_usuario: ["paciente", "medica", "secretaria", "admin"],
@@ -1460,6 +1780,7 @@ export const Constants = {
         "outro",
       ],
       tipo_gestacao: ["unica", "gemelar"],
+      tipo_sanguineo: ["A", "B", "AB", "O"],
     },
   },
 } as const

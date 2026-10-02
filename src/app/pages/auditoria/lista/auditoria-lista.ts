@@ -11,9 +11,11 @@ import { AuditoriaService, RegistroAuditoria } from '../../../core/auditoria/aud
 import { formatarDataHora } from '../../../core/formato/data';
 import { normalizarBusca } from '../../../core/formato/texto';
 
-// As 34 ações que migrations e a Edge Function gerir-equipe gravam hoje; ação
+// As 37 ações que migrations e a Edge Function gerir-equipe gravam hoje; ação
 // nova sem rótulo cai na chave crua em vez de sumir da tabela.
 const ROTULO_ACAO: Record<string, string> = {
+  'anamnese.aberta': 'Anamnese aberta',
+  'anamnese.registrada': 'Anamnese registrada',
   'checklist.marcado': 'Item de checklist marcado',
   'consulta.agendada': 'Consulta agendada',
   'consulta.cancelada': 'Consulta cancelada',
@@ -40,6 +42,7 @@ const ROTULO_ACAO: Record<string, string> = {
   'protocolo.item_editado': 'Item de protocolo editado',
   'protocolo.item_reativado': 'Item de protocolo reativado',
   'protocolo.reordenado': 'Protocolo reordenado',
+  'risco.classificado': 'Risco gestacional classificado',
   'vinculo.atribuido': 'Vínculo atribuído',
   'vinculo.inativado': 'Vínculo encerrado',
   'vinculo.transferido': 'Vínculo transferido',

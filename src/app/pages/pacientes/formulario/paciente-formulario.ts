@@ -9,6 +9,7 @@ import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { deDataIso, paraDataIso } from '../../../core/formato/data';
 import { Medica, PacientesService } from '../../../core/pacientes/pacientes.service';
+import { PacienteAnamnese } from '../anamnese/paciente-anamnese';
 import { PacienteGestacao } from '../gestacao/paciente-gestacao';
 import { PacienteVinculos } from '../vinculos/paciente-vinculos';
 
@@ -19,6 +20,7 @@ import { PacienteVinculos } from '../vinculos/paciente-vinculos';
     InputMaskModule,
     InputTextModule,
     MessageModule,
+    PacienteAnamnese,
     PacienteGestacao,
     PacienteVinculos,
     ReactiveFormsModule,
